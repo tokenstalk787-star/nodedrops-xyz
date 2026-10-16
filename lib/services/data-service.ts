@@ -282,12 +282,26 @@ export async function getGuides(params: {
 /**
  * Get a single guide by slug
  */
-export async function getGuideBySlug(slug: string): Promise<GuideItem | null> {
+const SLUG_ALIASES: Record<string, string> = {
+  "celestia-light-node-mocha-testnet": "setting-up-celestia-light-node-mocha",
+  "celestia-light-node": "setting-up-celestia-light-node-mocha",
+  "celestia-light": "setting-up-celestia-light-node-mocha",
+  "ethereum-sepolia": "run-ethereum-sepolia-node-geth-lighthouse",
+  "ethereum-sepolia-node": "run-ethereum-sepolia-node-geth-lighthouse",
+  "berachain-bartio": "berachain-bartio-testnet-full-node-guide",
+  "babylon-node": "babylon-bitcoin-staking-testnet-node",
+  "solana-validator": "solana-validator-testnet-performance-tuning",
+};
+
+export async function getGuideBySlug(rawSlug: string): Promise<GuideItem | null> {
+  const slug = SLUG_ALIASES[rawSlug] || rawSlug;
   const hasDb = await isDatabaseConnected();
   if (hasDb) {
     try {
-      const g = await prisma.guide.findUnique({
-        where: { slug },
+      const g = await prisma.guide.findFirst({
+        where: {
+          OR: [{ slug }, { slug: rawSlug }],
+        },
         include: {
           author: { select: { name: true } },
           reviewer: { select: { name: true } },
@@ -329,8 +343,40 @@ export async function getGuideBySlug(slug: string): Promise<GuideItem | null> {
     }
   }
 
-  const fallback = SEED_GUIDES.find((g) => g.slug === slug);
-  return fallback || null;
+  const fallback = SEED_GUIDES.find((g) => g.slug === slug || g.slug === rawSlug);
+  if (fallback) return fallback;
+
+  // Fallback if partial slug match
+  const partial = SEED_GUIDES.find(
+    (g) => g.slug.includes(rawSlug) || rawSlug.includes(g.slug)
+  );
+  return partial || null;
+}
+
+/**
+ * Get adjacent previous and next guides for documentation flow
+ */
+export async function getAdjacentGuides(currentSlug: string): Promise<{
+  prevGuide: GuideItem | null;
+  nextGuide: GuideItem | null;
+}> {
+  const allGuides = (await getGuides({ limit: 50 })).items;
+  const resolvedSlug = SLUG_ALIASES[currentSlug] || currentSlug;
+  const currentIndex = allGuides.findIndex(
+    (g) => g.slug === resolvedSlug || g.slug === currentSlug
+  );
+
+  if (currentIndex === -1) {
+    return {
+      prevGuide: allGuides[0] || null,
+      nextGuide: allGuides[1] || null,
+    };
+  }
+
+  return {
+    prevGuide: currentIndex > 0 ? allGuides[currentIndex - 1] : null,
+    nextGuide: currentIndex < allGuides.length - 1 ? allGuides[currentIndex + 1] : null,
+  };
 }
 
 /**
