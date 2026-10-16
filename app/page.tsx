@@ -1,17 +1,43 @@
 import Link from "next/link";
 import { ShieldCheck, ArrowRight } from "lucide-react";
-import { getOpportunities, getGuides } from "@/lib/services/data-service";
+import { getOpportunities, getGuides, getNetworks, getPageBySlug } from "@/lib/services/data-service";
 import { NodeDashboardContainer } from "@/components/home/node-dashboard-container";
 import { HomeFaqSection } from "@/components/home/home-faq-section";
+import { PageRenderer } from "@/components/builder/page-renderer";
 
-export const revalidate = 3600; // Static revalidation every hour for public home
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [oppsRes, guidesRes] = await Promise.all([
+  const [oppsRes, guidesRes, networksRes, homePage] = await Promise.all([
     getOpportunities({ limit: 50 }),
     getGuides({ limit: 50 }),
+    getNetworks({ limit: 50 }),
+    getPageBySlug("home"),
   ]);
 
+  // If a published home page exists in the Visual Page Builder, render it dynamically in real time!
+  if (homePage && homePage.status === "PUBLISHED" && homePage.sections && homePage.sections.length > 0) {
+    return (
+      <div className="flex flex-col min-h-screen text-text-primary selection:bg-brand-purple/40">
+        {/* Background Radial Glow Effects */}
+        <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+          <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[1200px] h-[550px] bg-gradient-to-b from-brand-purple/15 via-brand-blue/10 to-transparent blur-3xl opacity-80" />
+          <div className="absolute top-[600px] right-0 w-[500px] h-[500px] bg-brand-cyan/5 blur-3xl" />
+        </div>
+
+        <div className="container mx-auto px-4 sm:px-6 max-w-7xl">
+          <PageRenderer
+            sections={homePage.sections}
+            networks={networksRes.items}
+            guides={guidesRes.items}
+            opportunities={oppsRes.items}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Fallback to default layout if no published page exists
   return (
     <div className="flex flex-col min-h-screen text-text-primary selection:bg-brand-purple/40">
       {/* Background Radial Glow Effects */}
@@ -20,9 +46,7 @@ export default async function HomePage() {
         <div className="absolute top-[600px] right-0 w-[500px] h-[500px] bg-brand-cyan/5 blur-3xl" />
       </div>
 
-      {/* ========================================================================= */}
-      {/* PART 1 & 2: POTENTIAL AIRDROPS & TESTNET DASHBOARD (CryptoRank Reference) */}
-      {/* ========================================================================= */}
+      {/* PART 1 & 2: POTENTIAL AIRDROPS & TESTNET DASHBOARD */}
       <section className="py-6 sm:py-8 border-b border-border/80">
         <div className="container mx-auto px-4 sm:px-6 max-w-7xl">
           <NodeDashboardContainer
@@ -32,14 +56,10 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ========================================================================= */}
-      {/* PART 3: FREQUENTLY ASKED QUESTIONS (FAQ Accordion from Reference Image)   */}
-      {/* ========================================================================= */}
+      {/* PART 3: FREQUENTLY ASKED QUESTIONS */}
       <HomeFaqSection />
 
-      {/* ========================================================================= */}
-      {/* PART 4: SECURITY & SCAM AWARENESS WARNING PROTOCOL                        */}
-      {/* ========================================================================= */}
+      {/* PART 4: SECURITY PROTOCOL */}
       <section className="py-12 bg-[#090d18] border-b border-border/80">
         <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
           <div className="rounded-2xl border border-brand-purple/40 bg-gradient-to-r from-brand-purple/10 via-dark-card to-brand-blue/10 p-6 sm:p-7 flex flex-col sm:flex-row items-start gap-5 shadow-xl">
@@ -59,11 +79,6 @@ export default async function HomePage() {
                 <strong>Never share your mnemonic seed phrase or private keys.</strong>{" "}
                 NodeDrops.xyz will never request your wallet connection merely to view
                 opportunities, benchmark hardware, or read runbooks.
-              </p>
-              <p>
-                Always audit shell scripts and verification checksums before executing
-                commands with root privileges. Protect your P2P gossip ports with UFW
-                firewalls and never expose internal RPC or Engine APIs to the public internet.
               </p>
               <div className="pt-2">
                 <Link

@@ -47,7 +47,7 @@ export async function getNetworks(params: {
   type?: "MAINNET" | "TESTNET";
   page?: number;
   limit?: number;
-}): Promise<PaginatedResult<NetworkItem>> {
+} = {}): Promise<PaginatedResult<NetworkItem>> {
   const page = Math.max(1, params.page || 1);
   const limit = Math.min(50, Math.max(1, params.limit || 12));
   const hasDb = await isDatabaseConnected();

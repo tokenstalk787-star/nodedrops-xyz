@@ -102,7 +102,7 @@ export interface CommandTemplateItem {
 // ----------------------------------------------------
 export interface PageSectionItem {
   id: string;
-  componentType: "HERO" | "RICH_TEXT" | "STATS" | "FEATURES" | "NETWORK_GRID" | "GUIDE_GRID" | "OPPORTUNITY_GRID" | "FAQ" | "CTA" | "DIVIDER";
+  componentType: "HERO" | "RICH_TEXT" | "STATS" | "FEATURES" | "NETWORK_GRID" | "GUIDE_GRID" | "OPPORTUNITY_GRID" | "FAQ" | "CTA" | "DIVIDER" | "NODE_DASHBOARD" | "SECURITY_BANNER";
   orderIndex: number;
   config: Record<string, any>;
   isVisible: boolean;

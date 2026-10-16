@@ -24,7 +24,7 @@
       "testnet node",
       "web3 infrastructure"
     ],
-    "ogImage": "/brand/logo-horizontal.png",
+    "ogImage": "/uploads/Gemini_Generated_Image_2e940r2e940r2e94-1792168512580.png",
     "robotsDirective": "index, follow",
     "googleVerification": ""
   },
@@ -318,6 +318,17 @@
     }
   ],
   "media": [
+    {
+      "filename": "Gemini_Generated_Image_2e940r2e940r2e94.png",
+      "url": "/uploads/Gemini_Generated_Image_2e940r2e940r2e94-1792168512580.png",
+      "fileType": "image/png",
+      "fileSizeKb": 5991,
+      "dimensions": "Uploaded File",
+      "altText": "make it amazing",
+      "category": "image",
+      "id": "asset-1792168512585",
+      "createdAt": "2026-10-16T16:35:12.586Z"
+    },
     {
       "id": "med-brand-horizontal",
       "filename": "logo-horizontal.png",
@@ -1172,10 +1183,123 @@
       "/tools/hardware-checker": 19,
       "/opportunities": 27,
       "/admin": 3,
-      "/admin/footer": 1
+      "/admin/footer": 2,
+      "/admin/builder": 4,
+      "/admin/pages": 3,
+      "/admin/appearance": 2,
+      "/admin/media": 1,
+      "/admin/seo": 1,
+      "/admin/users": 1,
+      "/admin/analytics": 1,
+      "/admin/settings": 1
     },
-    "totalViews": 143,
+    "totalViews": 158,
     "events": [
+      {
+        "id": "tel-1792169698852-wbre",
+        "path": "/admin/builder",
+        "referrer": "http://localhost:3001/admin/footer",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T16:54:58.852Z"
+      },
+      {
+        "id": "tel-1792169516532-nz9y",
+        "path": "/admin/pages",
+        "referrer": "http://localhost:3001/admin/footer",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T16:51:56.532Z"
+      },
+      {
+        "id": "tel-1792169041492-a6kn",
+        "path": "/admin/pages",
+        "referrer": "http://localhost:3001/admin/footer",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T16:44:01.492Z"
+      },
+      {
+        "id": "tel-1792168933819-7h4a",
+        "path": "/admin/footer",
+        "referrer": "http://localhost:3001/admin/footer",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T16:42:13.819Z"
+      },
+      {
+        "id": "tel-1792168918847-b66t",
+        "path": "/admin/builder",
+        "referrer": "http://localhost:3001/admin/footer",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T16:41:58.847Z"
+      },
+      {
+        "id": "tel-1792168882339-vdis",
+        "path": "/admin/settings",
+        "referrer": "http://localhost:3001/admin/footer",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T16:41:22.339Z"
+      },
+      {
+        "id": "tel-1792168824663-7n74",
+        "path": "/admin/analytics",
+        "referrer": "http://localhost:3001/admin/footer",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T16:40:24.663Z"
+      },
+      {
+        "id": "tel-1792168705899-8y9q",
+        "path": "/admin/appearance",
+        "referrer": "http://localhost:3001/admin/footer",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T16:38:25.899Z"
+      },
+      {
+        "id": "tel-1792168699217-j2pv",
+        "path": "/admin/users",
+        "referrer": "http://localhost:3001/admin/footer",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T16:38:19.217Z"
+      },
+      {
+        "id": "tel-1792168624397-9zf8",
+        "path": "/admin/seo",
+        "referrer": "http://localhost:3001/admin/footer",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T16:37:04.397Z"
+      },
+      {
+        "id": "tel-1792168391077-7yt5",
+        "path": "/admin/media",
+        "referrer": "http://localhost:3001/admin/footer",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T16:33:11.077Z"
+      },
+      {
+        "id": "tel-1792168320349-qzu4",
+        "path": "/admin/appearance",
+        "referrer": "http://localhost:3001/admin/footer",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T16:32:00.349Z"
+      },
+      {
+        "id": "tel-1792168280026-g3gs",
+        "path": "/admin/builder",
+        "referrer": "http://localhost:3001/admin/footer",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T16:31:20.026Z"
+      },
+      {
+        "id": "tel-1792168259878-ubc4",
+        "path": "/admin/pages",
+        "referrer": "http://localhost:3001/admin/footer",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T16:30:59.878Z"
+      },
+      {
+        "id": "tel-1792168186910-6ryd",
+        "path": "/admin/builder",
+        "referrer": "http://localhost:3001/admin/footer",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T16:29:46.910Z"
+      },
       {
         "id": "tel-1792168081415-3kh6",
         "path": "/admin",
