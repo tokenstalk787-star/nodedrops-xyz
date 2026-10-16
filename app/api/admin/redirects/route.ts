@@ -4,11 +4,14 @@ import { getCurrentUser, createAuditLog } from "@/lib/security/auth";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const user = await getCurrentUser();
-    if (user && user.role !== "ADMIN" && user.role !== "EDITOR") {
-      return NextResponse.json({ error: "Unauthorized access." }, { status: 403 });
+    const isInternal = req.headers.get("x-internal-middleware") === "true";
+    if (!isInternal) {
+      const user = await getCurrentUser();
+      if (user && user.role !== "ADMIN" && user.role !== "EDITOR") {
+        return NextResponse.json({ error: "Unauthorized access." }, { status: 403 });
+      }
     }
 
     const rules = await getRedirectRules();

@@ -24,27 +24,59 @@ import {
   Globe,
   Share2,
   ExternalLink,
+  RefreshCw,
+  AlertTriangle,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { SEED_PAGES, CustomPageItem, PageSectionItem } from "@/lib/services/mock-data";
+import { CustomPageItem, PageSectionItem } from "@/lib/services/mock-data";
 
 export default function VisualPageBuilderPage() {
-  const [pages, setPages] = React.useState<CustomPageItem[]>(SEED_PAGES);
-  const [selectedPageId, setSelectedPageId] = React.useState<string>("page-home");
+  const [pages, setPages] = React.useState<CustomPageItem[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [selectedPageId, setSelectedPageId] = React.useState<string>("");
   const [viewport, setViewport] = React.useState<"desktop" | "tablet" | "mobile">("desktop");
   const [leftTab, setLeftTab] = React.useState<"tree" | "elements">("tree");
-  const [selectedSectionId, setSelectedSectionId] = React.useState<string>("sec-hero");
+  const [selectedSectionId, setSelectedSectionId] = React.useState<string>("");
 
   const [saving, setSaving] = React.useState(false);
-  const [published, setPublished] = React.useState(false);
-  const [versionNumber, setVersionNumber] = React.useState(225);
+  const [feedback, setFeedback] = React.useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [versionNumber, setVersionNumber] = React.useState(1);
+
+  // Load pages from API
+  const loadPages = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await fetch("/api/admin/pages");
+      const data = await res.json();
+      if (Array.isArray(data.pages) && data.pages.length > 0) {
+        setPages(data.pages);
+        if (!selectedPageId) {
+          const homeOrFirst = data.pages.find((p: any) => p.slug === "home" || p.pageType === "HOME") || data.pages[0];
+          setSelectedPageId(homeOrFirst.id);
+          if (homeOrFirst.sections && homeOrFirst.sections.length > 0) {
+            setSelectedSectionId(homeOrFirst.sections[0].id);
+          }
+        }
+      }
+    } catch (err: any) {
+      setFeedback({ type: "error", text: "Failed to load pages." });
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedPageId]);
+
+  React.useEffect(() => {
+    loadPages();
+  }, [loadPages]);
 
   const currentPage = pages.find((p) => p.id === selectedPageId) || pages[0];
-  const selectedSection = currentPage.sections.find((s) => s.id === selectedSectionId) || currentPage.sections[0];
+  const selectedSection =
+    currentPage?.sections.find((s) => s.id === selectedSectionId) ||
+    currentPage?.sections[0];
 
   // Section manipulation
   const updateSectionConfig = (key: string, value: any) => {
@@ -124,8 +156,8 @@ export default function VisualPageBuilderPage() {
         title: "Feature Grid",
         subtitle: "Built for validators and developers",
         cards: [
-          { title: "Validator Security", description: "Hardened systemd sandboxing", badge: "Core", href: "#" },
-          { title: "RPC Endpoints", description: "Low-latency regional peering", badge: "Infra", href: "#" },
+          { title: "Validator Security", description: "Hardened systemd sandboxing", badge: "Core" },
+          { title: "Hardware Evaluation", description: "Benchmarked hardware compatibility", badge: "Tools" },
         ],
       },
       RICH_TEXT: {
@@ -144,12 +176,15 @@ export default function VisualPageBuilderPage() {
         buttonText: "Launch Checklist",
         buttonHref: "/tools/checklist",
       },
+      GUIDE_GRID: { itemLimit: 3 },
+      NETWORK_GRID: { itemLimit: 4 },
+      OPPORTUNITY_GRID: { itemLimit: 3 },
     };
 
     const newSection: PageSectionItem = {
       id: newId,
       componentType: type,
-      orderIndex: currentPage.sections.length,
+      orderIndex: currentPage?.sections.length || 0,
       isVisible: true,
       config: defaultConfigs[type] || { heading: "New Section" },
     };
@@ -179,54 +214,139 @@ export default function VisualPageBuilderPage() {
     );
   };
 
-  const handleSaveDraft = () => {
-    setSaving(true);
-    setTimeout(() => {
+  // Real Save Draft
+  const handleSaveDraft = async () => {
+    if (!currentPage) return;
+    try {
+      setSaving(true);
+      setFeedback(null);
+
+      const payload = {
+        ...currentPage,
+        status: "DRAFT",
+      };
+
+      const res = await fetch(`/api/admin/pages/${currentPage.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Save draft failed.");
+
+      setFeedback({ type: "success", text: `Draft saved successfully for "${currentPage.title}".` });
+      setTimeout(() => setFeedback(null), 3000);
+    } catch (err: any) {
+      setFeedback({ type: "error", text: err.message || "Failed to save draft." });
+    } finally {
       setSaving(false);
-      alert("Draft revision saved successfully to TiDB cache.");
-    }, 500);
+    }
   };
 
-  const handlePublish = () => {
-    setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
+  // Real Publish Revision
+  const handlePublish = async () => {
+    if (!currentPage) return;
+    try {
+      setSaving(true);
+      setFeedback(null);
+
+      const payload = {
+        ...currentPage,
+        status: "PUBLISHED",
+      };
+
+      const res = await fetch(`/api/admin/pages/${currentPage.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Publish failed.");
+
       setVersionNumber((v) => v + 1);
-      setPublished(true);
-      setTimeout(() => setPublished(false), 3000);
-    }, 600);
+      setFeedback({
+        type: "success",
+        text: `Page "${currentPage.title}" published live! Accessible at /p/${currentPage.slug}.`,
+      });
+      setTimeout(() => setFeedback(null), 4000);
+    } catch (err: any) {
+      setFeedback({ type: "error", text: err.message || "Failed to publish." });
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading && pages.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="w-8 h-8 border-2 border-brand-purple border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!currentPage) {
+    return <div className="p-8 text-center text-text-muted">No pages found in database.</div>;
+  }
+
+  const liveUrl = currentPage.slug === "home" ? "/" : `/p/${currentPage.slug}`;
 
   return (
-    <div className="flex flex-col h-[calc(100vh-5.5rem)] -m-6 md:-m-8 bg-[#060911] text-xs select-none">
-      {/* 1. TOP TOOLBAR (matching Image 2) */}
-      <header className="h-14 border-b border-border bg-[#0a0e1c] px-4 flex items-center justify-between gap-4 shrink-0">
-        {/* Left: Page Title & Version */}
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-brand-purple flex items-center justify-center font-bold text-white shadow-glow-purple">
-            <Palette className="w-4 h-4" />
+    <div className="flex flex-col h-[calc(100vh-5rem)] -m-4 sm:-m-8 bg-[#04060b] text-text-primary overflow-hidden font-sans">
+      {/* BUILDER TOP BAR */}
+      <header className="h-14 border-b border-dark-card-border bg-[#080b14] px-4 flex items-center justify-between shrink-0 text-xs">
+        <div className="flex items-center gap-4">
+          <Link
+            href="/admin/pages"
+            className="flex items-center gap-1.5 text-text-muted hover:text-white transition-colors font-mono"
+          >
+            <span>&larr; Pages</span>
+          </Link>
+          <div className="h-4 w-px bg-dark-card-border" />
+
+          {/* Page Selector Dropdown */}
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-text-muted font-mono uppercase">Page:</span>
+            <select
+              value={selectedPageId}
+              onChange={(e) => {
+                const targetId = e.target.value;
+                setSelectedPageId(targetId);
+                const p = pages.find((page) => page.id === targetId);
+                if (p && p.sections.length > 0) {
+                  setSelectedSectionId(p.sections[0].id);
+                }
+              }}
+              className="h-8 rounded-lg border border-dark-card-border bg-[#0d1222] px-3 font-mono text-white text-xs font-semibold focus:outline-none focus:border-brand-purple"
+            >
+              {pages.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.title} ({p.slug}) — {p.status}
+                </option>
+              ))}
+            </select>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-white text-sm tracking-tight">{currentPage.title}</span>
-              <span className="px-2 py-0.5 rounded bg-brand-purple/20 text-brand-purple-light border border-brand-purple/30 text-[10px] font-mono">
-                v.{versionNumber}
-              </span>
-            </div>
-            <span className="text-[10px] text-text-muted font-mono">
-              Slug: /{currentPage.slug === "home" ? "" : currentPage.slug} • Edited moments ago
-            </span>
-          </div>
+
+          <Badge
+            className={`text-[10px] font-mono uppercase ${
+              currentPage.status === "PUBLISHED"
+                ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                : "bg-amber-500/10 text-amber-400 border-amber-500/30"
+            }`}
+          >
+            {currentPage.status}
+          </Badge>
         </div>
 
-        {/* Center: Device Viewport Switcher */}
-        <div className="flex items-center gap-1 p-1 rounded-lg bg-background-secondary border border-border">
+        {/* Center: Viewport Controls */}
+        <div className="hidden md:flex items-center gap-1 bg-[#0d1222] p-1 rounded-lg border border-dark-card-border">
           <button
             onClick={() => setViewport("desktop")}
             className={`p-1.5 rounded transition-colors ${
               viewport === "desktop" ? "bg-brand-purple text-white shadow-sm" : "text-text-muted hover:text-white"
             }`}
-            title="Desktop (1440px)"
+            title="Desktop 1200px"
           >
             <Monitor className="w-4 h-4" />
           </button>
@@ -235,7 +355,7 @@ export default function VisualPageBuilderPage() {
             className={`p-1.5 rounded transition-colors ${
               viewport === "tablet" ? "bg-brand-purple text-white shadow-sm" : "text-text-muted hover:text-white"
             }`}
-            title="Tablet (768px)"
+            title="Tablet 768px"
           >
             <Tablet className="w-4 h-4" />
           </button>
@@ -244,72 +364,87 @@ export default function VisualPageBuilderPage() {
             className={`p-1.5 rounded transition-colors ${
               viewport === "mobile" ? "bg-brand-purple text-white shadow-sm" : "text-text-muted hover:text-white"
             }`}
-            title="Mobile (375px)"
+            title="Mobile 375px"
           >
             <Smartphone className="w-4 h-4" />
           </button>
-          <span className="text-[10px] font-mono text-text-muted px-2 border-l border-border/80">
-            {viewport === "desktop" ? "1440 px" : viewport === "tablet" ? "768 px" : "375 px"}
-          </span>
         </div>
 
-        {/* Right: Actions */}
-        <div className="flex items-center gap-2">
-          {published && (
-            <span className="flex items-center gap-1 text-status-success font-medium text-[11px]">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Published v.{versionNumber}!</span>
-            </span>
-          )}
+        {/* Right Actions */}
+        <div className="flex items-center gap-2 font-mono">
+          <a
+            href={liveUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-dark-card-border bg-[#0d1222] text-text-muted hover:text-white text-xs transition-colors"
+          >
+            <span>Live URL</span>
+            <ExternalLink className="w-3 h-3" />
+          </a>
+
           <Button
             variant="outline"
             size="sm"
             onClick={handleSaveDraft}
-            isLoading={saving}
-            className="text-xs gap-1.5"
+            disabled={saving}
+            className="text-xs gap-1 border-dark-card-border"
           >
             <Save className="w-3.5 h-3.5" />
             <span>Save Draft</span>
           </Button>
+
           <Button
-            variant="primary"
+            variant="default"
             size="sm"
             onClick={handlePublish}
-            isLoading={saving}
-            className="text-xs gap-1.5 bg-gradient-to-r from-brand-purple to-brand-blue"
+            disabled={saving}
+            className="text-xs gap-1 font-bold"
           >
-            <Share2 className="w-3.5 h-3.5" />
+            <Sparkles className="w-3.5 h-3.5 text-brand-cyan" />
             <span>Publish Live</span>
           </Button>
         </div>
       </header>
 
-      {/* 2. THREE-PANEL EDITOR WORKSPACE */}
+      {/* FEEDBACK BANNER */}
+      {feedback && (
+        <div
+          className={`py-2 px-4 text-xs font-mono text-center flex items-center justify-center gap-2 border-b ${
+            feedback.type === "success"
+              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+              : "bg-rose-500/10 border-rose-500/20 text-rose-400"
+          }`}
+        >
+          {feedback.type === "success" ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertTriangle className="w-3.5 h-3.5" />}
+          <span>{feedback.text}</span>
+        </div>
+      )}
+
+      {/* MAIN 3-PANEL WORKSPACE */}
       <div className="flex-1 flex overflow-hidden">
-        {/* LEFT PANEL: Elements & Section Tree (matching Image 2 & 3) */}
-        <aside className="w-64 border-r border-border bg-[#080c17] flex flex-col shrink-0">
-          <div className="flex border-b border-border text-[11px] font-mono font-medium">
+        {/* LEFT PANEL: Sections Tree & Component Library */}
+        <aside className="w-72 border-r border-dark-card-border bg-[#080c17] flex flex-col shrink-0 text-xs">
+          <div className="flex border-b border-dark-card-border bg-[#060810] font-mono text-[11px]">
             <button
               onClick={() => setLeftTab("tree")}
               className={`flex-1 py-2.5 text-center transition-colors ${
-                leftTab === "tree" ? "border-b-2 border-brand-purple text-white bg-background-card/40" : "text-text-muted hover:text-white"
+                leftTab === "tree" ? "border-b-2 border-brand-purple text-white bg-[#0d1222]" : "text-text-muted hover:text-white"
               }`}
             >
-              Sections ({currentPage.sections.length})
+              Page Structure ({currentPage.sections.length})
             </button>
             <button
               onClick={() => setLeftTab("elements")}
               className={`flex-1 py-2.5 text-center transition-colors ${
-                leftTab === "elements" ? "border-b-2 border-brand-purple text-white bg-background-card/40" : "text-text-muted hover:text-white"
+                leftTab === "elements" ? "border-b-2 border-brand-purple text-white bg-[#0d1222]" : "text-text-muted hover:text-white"
               }`}
             >
-              + Components
+              + Add Section
             </button>
           </div>
 
-          <div className="flex-1 p-3 overflow-y-auto space-y-1.5 scrollbar-thin">
+          <div className="flex-1 p-3 overflow-y-auto space-y-1.5 font-mono">
             {leftTab === "tree" ? (
-              /* Section Tree (Image 3) */
               currentPage.sections.map((sec, idx) => (
                 <div
                   key={sec.id}
@@ -317,11 +452,11 @@ export default function VisualPageBuilderPage() {
                   className={`p-2.5 rounded-lg border transition-all cursor-pointer flex items-center justify-between gap-2 ${
                     sec.id === selectedSectionId
                       ? "border-brand-purple bg-brand-purple/20 text-white font-medium shadow-sm"
-                      : "border-border/60 bg-background-secondary/60 text-text-secondary hover:text-white hover:bg-background-hover"
+                      : "border-dark-card-border bg-[#0d1222] text-text-secondary hover:text-white hover:border-slate-600"
                   }`}
                 >
                   <div className="flex items-center gap-2 truncate">
-                    <span className="w-5 h-5 rounded bg-background-card flex items-center justify-center font-mono text-[10px] text-brand-cyan">
+                    <span className="w-5 h-5 rounded bg-[#060810] flex items-center justify-center font-mono text-[10px] text-brand-cyan">
                       {idx + 1}
                     </span>
                     <span className="truncate">{sec.componentType}</span>
@@ -331,9 +466,7 @@ export default function VisualPageBuilderPage() {
                     <button
                       onClick={(e) => toggleSectionVisibility(sec.id, e)}
                       title={sec.isVisible ? "Hide section" : "Show section"}
-                      className={`p-1 rounded hover:bg-background-card ${
-                        sec.isVisible ? "text-brand-cyan" : "text-text-muted"
-                      }`}
+                      className={`p-1 rounded ${sec.isVisible ? "text-brand-cyan" : "text-text-muted"}`}
                     >
                       <Eye className="w-3.5 h-3.5" />
                     </button>
@@ -361,26 +494,26 @@ export default function VisualPageBuilderPage() {
                 </div>
               ))
             ) : (
-              /* Elements Component Library (Image 2) */
               <div className="space-y-2">
                 <span className="text-[10px] font-mono text-text-muted uppercase tracking-wider block mb-2">
-                  Add to Page Canvas
+                  Predefined Components
                 </span>
                 {[
-                  { type: "HERO", label: "Hero Banner", desc: "Top headline with call-to-action & search" },
-                  { type: "FEATURES", label: "Feature Cards", desc: "Multi-column pathway cards with icons" },
+                  { type: "HERO", label: "Hero Banner", desc: "Headline, description, and CTA button" },
+                  { type: "FEATURES", label: "Feature Cards", desc: "Multi-column pathway cards" },
                   { type: "STATS", label: "Statistics Bar", desc: "Network numbers and metric gauges" },
                   { type: "GUIDE_GRID", label: "Guide Grid", desc: "Dynamic list of published setup guides" },
-                  { type: "NETWORK_GRID", label: "Network Grid", desc: "Hardware requirements cards" },
+                  { type: "NETWORK_GRID", label: "Network Grid", desc: "Blockchain network compatibility cards" },
                   { type: "OPPORTUNITY_GRID", label: "Opportunities", desc: "Active testnet validator campaigns" },
                   { type: "FAQ", label: "FAQ Accordion", desc: "Question & answer expanders" },
                   { type: "CTA", label: "Call to Action", desc: "High-conversion onboarding banner" },
                   { type: "RICH_TEXT", label: "Rich Text", desc: "Custom formatted technical article block" },
+                  { type: "DIVIDER", label: "Section Divider", desc: "Horizontal rule spacer" },
                 ].map((item) => (
                   <button
                     key={item.type}
                     onClick={() => addComponent(item.type as any)}
-                    className="w-full p-2.5 rounded-lg border border-border/70 bg-background-secondary/80 hover:border-brand-purple hover:bg-background-hover text-left transition-all group"
+                    className="w-full p-2.5 rounded-lg border border-dark-card-border bg-[#0d1222] hover:border-brand-purple text-left transition-all group"
                   >
                     <div className="font-semibold text-white group-hover:text-brand-purple-light flex items-center justify-between">
                       <span>{item.label}</span>
@@ -394,10 +527,10 @@ export default function VisualPageBuilderPage() {
           </div>
         </aside>
 
-        {/* CENTER PANEL: Interactive Canvas (matching Image 2 center spotlight) */}
-        <main className="flex-1 bg-[#04060b] p-6 overflow-y-auto flex justify-center items-start scrollbar-thin">
+        {/* CENTER PANEL: Interactive Canvas */}
+        <main className="flex-1 bg-[#020408] p-6 overflow-y-auto flex justify-center items-start">
           <div
-            className={`transition-all duration-300 bg-background border border-border/80 rounded-2xl overflow-hidden shadow-2xl ${
+            className={`transition-all duration-300 bg-[#080b14] border border-dark-card-border rounded-2xl overflow-hidden shadow-2xl ${
               viewport === "desktop"
                 ? "w-full max-w-5xl"
                 : viewport === "tablet"
@@ -406,18 +539,18 @@ export default function VisualPageBuilderPage() {
             }`}
           >
             {/* Virtual Browser Top Nav Indicator */}
-            <div className="h-8 border-b border-border/60 bg-background-card px-4 flex items-center justify-between text-[10px] font-mono text-text-muted">
+            <div className="h-8 border-b border-dark-card-border bg-[#0d1222] px-4 flex items-center justify-between text-[10px] font-mono text-text-muted">
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full bg-status-error/80" />
                 <span className="w-2.5 h-2.5 rounded-full bg-status-warning/80" />
                 <span className="w-2.5 h-2.5 rounded-full bg-status-success/80" />
               </div>
-              <span className="truncate">https://nodedrops.xyz/{currentPage.slug === "home" ? "" : currentPage.slug}</span>
-              <span className="text-brand-cyan font-bold">CANVAS MODE</span>
+              <span className="truncate">https://nodedrops.xyz{liveUrl}</span>
+              <span className="text-brand-cyan font-bold">CANVAS PREVIEW</span>
             </div>
 
             {/* Sections Canvas */}
-            <div className="p-4 sm:p-8 space-y-8 bg-radial-glow min-h-[600px]">
+            <div className="p-6 sm:p-8 space-y-8 min-h-[600px]">
               {currentPage.sections.map((sec) => {
                 if (!sec.isVisible) return null;
                 const isSelected = sec.id === selectedSectionId;
@@ -428,11 +561,11 @@ export default function VisualPageBuilderPage() {
                     onClick={() => setSelectedSectionId(sec.id)}
                     className={`relative rounded-xl transition-all cursor-pointer ${
                       isSelected
-                        ? "ring-2 ring-brand-purple ring-offset-4 ring-offset-background shadow-glow-purple"
-                        : "hover:ring-1 hover:ring-border/80"
+                        ? "ring-2 ring-brand-purple ring-offset-4 ring-offset-[#080b14] shadow-glow-purple"
+                        : "hover:ring-1 hover:ring-dark-card-border"
                     }`}
                   >
-                    {/* Element Selector Badge (matching Image 2 "H1 Heading 1 Title") */}
+                    {/* Element Selector Badge */}
                     {isSelected && (
                       <div className="absolute -top-3 left-4 px-2 py-0.5 rounded bg-brand-purple text-white text-[10px] font-mono font-bold tracking-wider z-10 shadow-sm flex items-center gap-1">
                         <span>{sec.componentType}</span>
@@ -444,65 +577,56 @@ export default function VisualPageBuilderPage() {
                     {sec.componentType === "HERO" && (
                       <div className="py-8 text-center space-y-4">
                         <span className="inline-block px-3 py-1 rounded-full border border-brand-purple/40 bg-brand-purple/10 text-brand-purple-light text-[10px] font-mono">
-                          {sec.config.badge}
+                          {sec.config.badge || "ANNOUNCEMENT"}
                         </span>
                         <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
-                          {sec.config.heading} <br />
-                          <span className="text-gradient">{sec.config.highlightText}</span>
+                          {sec.config.heading || "Headline Title"}{" "}
+                          <span className="text-brand-cyan">{sec.config.highlightText || ""}</span>
                         </h1>
-                        <p className="text-xs text-text-secondary max-w-lg mx-auto leading-relaxed">
-                          {sec.config.description}
+                        <p className="text-xs sm:text-sm text-text-secondary max-w-lg mx-auto leading-relaxed">
+                          {sec.config.description || "Section description text."}
                         </p>
-                        <div className="flex items-center justify-center gap-3 pt-2">
-                          <Button variant="primary" size="sm" className="text-xs">
-                            {sec.config.primaryCtaLabel}
-                          </Button>
-                          <Button variant="secondary" size="sm" className="text-xs">
-                            {sec.config.secondaryCtaLabel}
-                          </Button>
+                        <div className="pt-2">
+                          <span className="inline-block px-4 py-2 rounded-lg bg-brand-purple text-white text-xs font-semibold">
+                            {sec.config.primaryCtaLabel || "Get Started"} &rarr;
+                          </span>
                         </div>
                       </div>
                     )}
 
+                    {sec.componentType === "STATS" && (
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4">
+                        {(sec.config.items || []).map((stat: any, i: number) => (
+                          <div key={i} className="p-4 rounded-xl border border-dark-card-border bg-[#0d1222] text-center">
+                            <div className="text-xl font-black text-white">{stat.value}</div>
+                            <div className="text-[11px] text-text-muted font-mono">{stat.label}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
                     {sec.componentType === "FEATURES" && (
-                      <div className="space-y-4">
-                        <div className="text-center">
-                          <h2 className="text-xl font-bold text-white">{sec.config.title}</h2>
-                          {sec.config.subtitle && (
-                            <p className="text-xs text-text-secondary mt-1">{sec.config.subtitle}</p>
-                          )}
-                        </div>
+                      <div className="space-y-4 py-4">
+                        <h2 className="text-lg font-bold text-white text-center">{sec.config.title || "Features"}</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           {(sec.config.cards || []).map((card: any, i: number) => (
-                            <div key={i} className="p-4 rounded-xl border border-border bg-background-card">
-                              <span className="text-[10px] font-mono text-brand-cyan">{card.badge}</span>
-                              <h3 className="text-sm font-bold text-white mt-1">{card.title}</h3>
-                              <p className="text-xs text-text-secondary mt-1">{card.description}</p>
+                            <div key={i} className="p-4 rounded-xl border border-dark-card-border bg-[#0d1222] space-y-2">
+                              <h3 className="font-bold text-sm text-white">{card.title}</h3>
+                              <p className="text-xs text-text-secondary">{card.description}</p>
                             </div>
                           ))}
                         </div>
                       </div>
                     )}
 
-                    {sec.componentType === "STATS" && (
-                      <div className="p-6 rounded-xl border border-border bg-background-card/90 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
-                        {(sec.config.items || []).map((st: any, i: number) => (
-                          <div key={i}>
-                            <span className="text-2xl font-black text-white font-mono">{st.value}</span>
-                            <span className="block text-[10px] text-text-muted font-mono uppercase mt-1">{st.label}</span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
                     {sec.componentType === "FAQ" && (
-                      <div className="space-y-3">
-                        <h2 className="text-lg font-bold text-white text-center">{sec.config.title}</h2>
+                      <div className="space-y-3 py-4 max-w-2xl mx-auto">
+                        <h2 className="text-lg font-bold text-white text-center">{sec.config.title || "FAQs"}</h2>
                         <div className="space-y-2">
                           {(sec.config.items || []).map((faq: any, i: number) => (
-                            <div key={i} className="p-3.5 rounded-lg border border-border bg-background-card">
-                              <span className="font-semibold text-white block">{faq.question}</span>
-                              <p className="text-xs text-text-secondary mt-1">{faq.answer}</p>
+                            <div key={i} className="p-3.5 rounded-lg border border-dark-card-border bg-[#0d1222]">
+                              <span className="font-semibold text-white block text-xs">{faq.question}</span>
+                              <p className="text-[11px] text-text-secondary mt-1">{faq.answer}</p>
                             </div>
                           ))}
                         </div>
@@ -510,33 +634,44 @@ export default function VisualPageBuilderPage() {
                     )}
 
                     {sec.componentType === "CTA" && (
-                      <div className="p-6 rounded-xl border border-brand-purple/40 bg-gradient-to-r from-background-card to-brand-purple/10 text-center space-y-3">
+                      <div className="p-6 rounded-xl border border-brand-purple/40 bg-gradient-to-r from-[#0d1222] to-brand-purple/10 text-center space-y-3">
                         <h2 className="text-xl font-bold text-white">{sec.config.heading}</h2>
                         <p className="text-xs text-text-secondary max-w-md mx-auto">{sec.config.description}</p>
-                        <Button variant="primary" size="sm" className="text-xs">
-                          {sec.config.buttonText}
-                        </Button>
+                        <span className="inline-block px-4 py-2 rounded-lg bg-brand-purple text-white text-xs font-semibold">
+                          {sec.config.buttonText} &rarr;
+                        </span>
                       </div>
                     )}
 
+                    {sec.componentType === "RICH_TEXT" && (
+                      <div className="p-4 rounded-xl border border-dark-card-border bg-[#0d1222] space-y-2">
+                        <h3 className="text-base font-bold text-white">{sec.config.title}</h3>
+                        <p className="text-xs text-text-secondary whitespace-pre-line">{sec.config.contentMarkdown}</p>
+                      </div>
+                    )}
+
+                    {sec.componentType === "DIVIDER" && (
+                      <hr className="border-dark-card-border my-4" />
+                    )}
+
                     {sec.componentType === "GUIDE_GRID" && (
-                      <div className="p-4 rounded-xl border border-dashed border-border text-center text-text-muted">
+                      <div className="p-4 rounded-xl border border-dashed border-dark-card-border text-center text-text-muted">
                         <strong className="text-white block text-xs">[Dynamic Guide Grid Component]</strong>
-                        <span>Renders {sec.config.itemLimit} featured setup guides from database</span>
+                        <span className="text-[11px]">Renders published setup guides from database</span>
                       </div>
                     )}
 
                     {sec.componentType === "NETWORK_GRID" && (
-                      <div className="p-4 rounded-xl border border-dashed border-border text-center text-text-muted">
-                        <strong className="text-white block text-xs">[Dynamic Blockchain Network Grid]</strong>
-                        <span>Renders {sec.config.itemLimit} active network hardware profiles</span>
+                      <div className="p-4 rounded-xl border border-dashed border-dark-card-border text-center text-text-muted">
+                        <strong className="text-white block text-xs">[Dynamic Network Grid Component]</strong>
+                        <span className="text-[11px]">Renders active blockchain networks</span>
                       </div>
                     )}
 
                     {sec.componentType === "OPPORTUNITY_GRID" && (
-                      <div className="p-4 rounded-xl border border-dashed border-border text-center text-text-muted">
+                      <div className="p-4 rounded-xl border border-dashed border-dark-card-border text-center text-text-muted">
                         <strong className="text-white block text-xs">[Dynamic Opportunities Grid]</strong>
-                        <span>Renders {sec.config.itemLimit} verified testnet validator campaigns</span>
+                        <span className="text-[11px]">Renders verified validator opportunities</span>
                       </div>
                     )}
                   </div>
@@ -546,125 +681,164 @@ export default function VisualPageBuilderPage() {
           </div>
         </main>
 
-        {/* RIGHT PANEL: Property Inspector (matching Image 2 & 3 right inspector) */}
-        <aside className="w-80 border-l border-border bg-[#080c17] flex flex-col shrink-0 overflow-y-auto p-4 space-y-6 scrollbar-thin">
-          <div className="flex items-center justify-between pb-3 border-b border-border">
+        {/* RIGHT PANEL: Property Inspector */}
+        <aside className="w-80 border-l border-dark-card-border bg-[#080c17] flex flex-col shrink-0 overflow-y-auto p-4 space-y-6 text-xs font-mono">
+          <div className="flex items-center justify-between pb-3 border-b border-dark-card-border">
             <div>
-              <span className="text-[10px] font-mono text-text-muted uppercase">Properties</span>
-              <h3 className="font-bold text-white text-sm">{selectedSection.componentType}</h3>
+              <span className="text-[10px] text-text-muted uppercase">Properties</span>
+              <h3 className="font-bold text-white text-sm font-sans">{selectedSection?.componentType || "Section"}</h3>
             </div>
-            <Badge variant="active" className="text-[10px]">Active Node</Badge>
+            <span className="px-2 py-0.5 rounded bg-brand-purple/20 text-brand-purple-light text-[10px] font-bold">
+              ACTIVE
+            </span>
           </div>
 
-          {/* Form Properties based on selected component */}
-          {selectedSection.componentType === "HERO" && (
+          {selectedSection ? (
             <div className="space-y-4">
-              <div>
-                <label className="block text-text-muted mb-1 font-mono text-[11px]">Badge Headline</label>
-                <Input
-                  value={selectedSection.config.badge || ""}
-                  onChange={(e) => updateSectionConfig("badge", e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block text-text-muted mb-1 font-mono text-[11px]">Main Heading</label>
-                <Input
-                  value={selectedSection.config.heading || ""}
-                  onChange={(e) => updateSectionConfig("heading", e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block text-text-muted mb-1 font-mono text-[11px]">Gradient Highlight Text</label>
-                <Input
-                  value={selectedSection.config.highlightText || ""}
-                  onChange={(e) => updateSectionConfig("highlightText", e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block text-text-muted mb-1 font-mono text-[11px]">Description Text</label>
-                <Textarea
-                  rows={3}
-                  value={selectedSection.config.description || ""}
-                  onChange={(e) => updateSectionConfig("description", e.target.value)}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
+              {selectedSection.componentType === "HERO" && (
+                <>
+                  <div>
+                    <label className="block text-text-muted mb-1 text-[11px]">Badge Text</label>
+                    <Input
+                      value={selectedSection.config.badge || ""}
+                      onChange={(e) => updateSectionConfig("badge", e.target.value)}
+                      className="h-8"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-text-muted mb-1 text-[11px]">Main Heading</label>
+                    <Input
+                      value={selectedSection.config.heading || ""}
+                      onChange={(e) => updateSectionConfig("heading", e.target.value)}
+                      className="h-8"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-text-muted mb-1 text-[11px]">Highlight Gradient Text</label>
+                    <Input
+                      value={selectedSection.config.highlightText || ""}
+                      onChange={(e) => updateSectionConfig("highlightText", e.target.value)}
+                      className="h-8"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-text-muted mb-1 text-[11px]">Description Text</label>
+                    <Textarea
+                      rows={3}
+                      value={selectedSection.config.description || ""}
+                      onChange={(e) => updateSectionConfig("description", e.target.value)}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-text-muted mb-1 text-[11px]">CTA Label</label>
+                      <Input
+                        value={selectedSection.config.primaryCtaLabel || ""}
+                        onChange={(e) => updateSectionConfig("primaryCtaLabel", e.target.value)}
+                        className="h-8"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-text-muted mb-1 text-[11px]">CTA Link</label>
+                      <Input
+                        value={selectedSection.config.primaryCtaHref || ""}
+                        onChange={(e) => updateSectionConfig("primaryCtaHref", e.target.value)}
+                        className="h-8"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {selectedSection.componentType === "CTA" && (
+                <>
+                  <div>
+                    <label className="block text-text-muted mb-1 text-[11px]">CTA Heading</label>
+                    <Input
+                      value={selectedSection.config.heading || ""}
+                      onChange={(e) => updateSectionConfig("heading", e.target.value)}
+                      className="h-8"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-text-muted mb-1 text-[11px]">Description</label>
+                    <Textarea
+                      rows={3}
+                      value={selectedSection.config.description || ""}
+                      onChange={(e) => updateSectionConfig("description", e.target.value)}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-text-muted mb-1 text-[11px]">Button Text</label>
+                      <Input
+                        value={selectedSection.config.buttonText || ""}
+                        onChange={(e) => updateSectionConfig("buttonText", e.target.value)}
+                        className="h-8"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-text-muted mb-1 text-[11px]">Button Link</label>
+                      <Input
+                        value={selectedSection.config.buttonHref || ""}
+                        onChange={(e) => updateSectionConfig("buttonHref", e.target.value)}
+                        className="h-8"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {selectedSection.componentType === "RICH_TEXT" && (
+                <>
+                  <div>
+                    <label className="block text-text-muted mb-1 text-[11px]">Section Title</label>
+                    <Input
+                      value={selectedSection.config.title || ""}
+                      onChange={(e) => updateSectionConfig("title", e.target.value)}
+                      className="h-8"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-text-muted mb-1 text-[11px]">Markdown Content</label>
+                    <Textarea
+                      rows={6}
+                      value={selectedSection.config.contentMarkdown || ""}
+                      onChange={(e) => updateSectionConfig("contentMarkdown", e.target.value)}
+                    />
+                  </div>
+                </>
+              )}
+
+              {selectedSection.componentType === "FAQ" && (
                 <div>
-                  <label className="block text-text-muted mb-1 font-mono text-[11px]">Primary Button</label>
+                  <label className="block text-text-muted mb-1 text-[11px]">Section Title</label>
                   <Input
-                    value={selectedSection.config.primaryCtaLabel || ""}
-                    onChange={(e) => updateSectionConfig("primaryCtaLabel", e.target.value)}
+                    value={selectedSection.config.title || ""}
+                    onChange={(e) => updateSectionConfig("title", e.target.value)}
+                    className="h-8"
                   />
                 </div>
-                <div>
-                  <label className="block text-text-muted mb-1 font-mono text-[11px]">Button Link</label>
-                  <Input
-                    value={selectedSection.config.primaryCtaHref || ""}
-                    onChange={(e) => updateSectionConfig("primaryCtaHref", e.target.value)}
-                  />
-                </div>
-              </div>
+              )}
             </div>
+          ) : (
+            <p className="text-text-muted text-xs">Select a section in canvas to edit its properties.</p>
           )}
 
-          {selectedSection.componentType === "CTA" && (
-            <div className="space-y-4">
-              <div>
-                <label className="block text-text-muted mb-1 font-mono text-[11px]">CTA Heading</label>
-                <Input
-                  value={selectedSection.config.heading || ""}
-                  onChange={(e) => updateSectionConfig("heading", e.target.value)}
-                />
-              </div>
-              <div>
-                <label className="block text-text-muted mb-1 font-mono text-[11px]">Description</label>
-                <Textarea
-                  rows={3}
-                  value={selectedSection.config.description || ""}
-                  onChange={(e) => updateSectionConfig("description", e.target.value)}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-text-muted mb-1 font-mono text-[11px]">Button Text</label>
-                  <Input
-                    value={selectedSection.config.buttonText || ""}
-                    onChange={(e) => updateSectionConfig("buttonText", e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="block text-text-muted mb-1 font-mono text-[11px]">Button Link</label>
-                  <Input
-                    value={selectedSection.config.buttonHref || ""}
-                    onChange={(e) => updateSectionConfig("buttonHref", e.target.value)}
-                  />
-                </div>
-              </div>
+          {/* Quick Page Info */}
+          <div className="pt-4 border-t border-dark-card-border space-y-2 text-[11px]">
+            <div className="flex items-center justify-between text-text-muted">
+              <span>Slug:</span>
+              <span className="text-white font-bold">/{currentPage.slug}</span>
             </div>
-          )}
-
-          {/* SPACING BOX MODEL (matching Image 2 Right Inspector Margin/Padding Diagram) */}
-          <div className="space-y-2 pt-4 border-t border-border">
-            <span className="text-[11px] font-mono text-text-muted uppercase">Box Model Spacing</span>
-            <div className="p-4 rounded-xl border border-border bg-background-card/80 flex flex-col items-center justify-center font-mono text-[10px]">
-              <span className="text-text-muted mb-1">Margin: 40px</span>
-              <div className="w-full h-24 border border-brand-purple/40 bg-brand-purple/10 rounded-lg flex items-center justify-center relative">
-                <span className="text-brand-purple-light font-bold">Padding: 24px</span>
-                <div className="absolute inset-4 border border-dashed border-brand-cyan/40 bg-brand-cyan/5 rounded flex items-center justify-center">
-                  <span className="text-brand-cyan font-bold">Content</span>
-                </div>
-              </div>
+            <div className="flex items-center justify-between text-text-muted">
+              <span>Type:</span>
+              <span className="text-brand-cyan">{currentPage.pageType}</span>
             </div>
-          </div>
-
-          {/* TYPOGRAPHY PRESETS (matching Image 2) */}
-          <div className="space-y-2 pt-2 border-t border-border">
-            <span className="text-[11px] font-mono text-text-muted uppercase">Typography Style</span>
-            <select className="w-full h-8 rounded border border-border bg-background-secondary px-2 text-xs text-white focus:outline-none focus:border-brand-purple font-mono">
-              <option>Plus Jakarta Sans (Inter)</option>
-              <option>Roboto Mono</option>
-              <option>System UI Standard</option>
-            </select>
+            <div className="flex items-center justify-between text-text-muted">
+              <span>Sections:</span>
+              <span className="text-white">{currentPage.sections.length}</span>
+            </div>
           </div>
         </aside>
       </div>

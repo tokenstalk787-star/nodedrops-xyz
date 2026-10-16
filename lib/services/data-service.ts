@@ -1,4 +1,5 @@
 import { prisma, isDatabaseConnected } from "../db/prisma";
+import { getStore, saveStore, SiteSettingsData } from "./data-store";
 import {
   SEED_NETWORKS,
   SEED_GUIDES,
@@ -103,7 +104,7 @@ export async function getNetworks(params: {
     }
   }
 
-  let filtered = [...SEED_NETWORKS];
+  let filtered = [...getStore().networks];
   if (params.type) {
     filtered = filtered.filter((n) => n.networkType === params.type);
   }
@@ -158,7 +159,7 @@ export async function getNetworkBySlug(slug: string): Promise<NetworkItem | null
     }
   }
 
-  const fallback = SEED_NETWORKS.find((n) => n.slug === slug);
+  const fallback = getStore().networks.find((n) => n.slug === slug);
   return fallback || null;
 }
 
@@ -249,7 +250,7 @@ export async function getGuides(params: {
     }
   }
 
-  let filtered = SEED_GUIDES.filter((g) => g.status === "PUBLISHED");
+  let filtered = getStore().guides.filter((g) => g.status === "PUBLISHED");
   if (params.difficulty) {
     filtered = filtered.filter((g) => g.difficulty === params.difficulty);
   }
@@ -343,11 +344,12 @@ export async function getGuideBySlug(rawSlug: string): Promise<GuideItem | null>
     }
   }
 
-  const fallback = SEED_GUIDES.find((g) => g.slug === slug || g.slug === rawSlug);
+  const allGuides = getStore().guides;
+  const fallback = allGuides.find((g) => g.slug === slug || g.slug === rawSlug);
   if (fallback) return fallback;
 
   // Fallback if partial slug match
-  const partial = SEED_GUIDES.find(
+  const partial = allGuides.find(
     (g) => g.slug.includes(rawSlug) || rawSlug.includes(g.slug)
   );
   return partial || null;
@@ -452,7 +454,7 @@ export async function getOpportunities(params: {
     }
   }
 
-  let filtered = [...SEED_OPPORTUNITIES];
+  let filtered = [...getStore().opportunities];
   if (params.status && params.status !== "ALL") {
     filtered = filtered.filter((o) => o.campaignStatus === params.status);
   }
@@ -511,7 +513,7 @@ export async function getOpportunityBySlug(slug: string): Promise<OpportunityIte
     }
   }
 
-  return SEED_OPPORTUNITIES.find((o) => o.slug === slug) || null;
+  return getStore().opportunities.find((o) => o.slug === slug) || null;
 }
 
 export async function getTroubleshooting(params: { search?: string }): Promise<TroubleshootingItem[]> {
@@ -550,9 +552,10 @@ export async function getTroubleshooting(params: { search?: string }): Promise<T
     }
   }
 
+  const allTrouble = getStore().troubleshooting;
   if (params.search) {
     const s = params.search.toLowerCase();
-    return SEED_TROUBLESHOOTING.filter(
+    return allTrouble.filter(
       (t) =>
         t.title.toLowerCase().includes(s) ||
         t.symptoms.toLowerCase().includes(s) ||
@@ -561,7 +564,7 @@ export async function getTroubleshooting(params: { search?: string }): Promise<T
     );
   }
 
-  return SEED_TROUBLESHOOTING;
+  return allTrouble;
 }
 
 export async function evaluateHardware(input: {
@@ -683,10 +686,11 @@ export async function getCommandTemplates(networkSlug?: string): Promise<Command
     }
   }
 
+  const allTemplates = getStore().commandTemplates;
   if (networkSlug) {
-    return SEED_COMMAND_TEMPLATES.filter((t) => t.networkSlug === networkSlug);
+    return allTemplates.filter((t) => t.networkSlug === networkSlug);
   }
-  return SEED_COMMAND_TEMPLATES;
+  return allTemplates;
 }
 
 export async function searchAll(query: string) {
@@ -825,7 +829,7 @@ export async function getPages(): Promise<CustomPageItem[]> {
     }
   }
 
-  return SEED_PAGES;
+  return getStore().pages;
 }
 
 /**
@@ -870,7 +874,7 @@ export async function getPageBySlug(slug: string): Promise<CustomPageItem | null
     }
   }
 
-  return SEED_PAGES.find((p) => p.slug === slug) || null;
+  return getStore().pages.find((p) => p.slug === slug) || null;
 }
 
 /**
@@ -910,7 +914,7 @@ export async function getNavigationMenu(location: "HEADER" | "FOOTER"): Promise<
     }
   }
 
-  return location === "HEADER" ? SEED_NAV_HEADER : SEED_NAV_FOOTER;
+  return location === "HEADER" ? getStore().navHeader : getStore().navFooter;
 }
 
 /**
@@ -940,7 +944,7 @@ export async function getThemeConfig(): Promise<ThemeConfigItem> {
     }
   }
 
-  return SEED_THEME;
+  return getStore().theme;
 }
 
 /**
@@ -976,10 +980,11 @@ export async function getMediaAssets(category?: string): Promise<MediaAssetItem[
     }
   }
 
+  const mediaList = getStore().media;
   if (category && category !== "all") {
-    return SEED_MEDIA.filter((m) => m.category === category);
+    return mediaList.filter((m) => m.category === category);
   }
-  return SEED_MEDIA;
+  return mediaList;
 }
 
 /**
@@ -1007,7 +1012,7 @@ export async function getRedirectRules(): Promise<RedirectRuleItem[]> {
     }
   }
 
-  return SEED_REDIRECTS;
+  return getStore().redirects;
 }
 
 /**
@@ -1151,8 +1156,9 @@ export async function savePage(
     }
   }
 
-  // In-memory fallback
-  const idx = SEED_PAGES.findIndex((p) => p.id === data.id || p.slug === data.slug);
+  // Store fallback
+  const store = getStore();
+  const idx = store.pages.findIndex((p) => p.id === data.id || p.slug === data.slug);
   const updatedPage: CustomPageItem = {
     id: data.id || pageId,
     title: data.title,
@@ -1173,10 +1179,11 @@ export async function savePage(
   };
 
   if (idx >= 0) {
-    SEED_PAGES[idx] = updatedPage;
+    store.pages[idx] = updatedPage;
   } else {
-    SEED_PAGES.push(updatedPage);
+    store.pages.push(updatedPage);
   }
+  saveStore(store);
 
   return { success: true, id: updatedPage.id };
 }
@@ -1195,9 +1202,11 @@ export async function deletePage(pageId: string): Promise<{ success: boolean; er
       return { success: false, error: e.message };
     }
   }
-  const idx = SEED_PAGES.findIndex((p) => p.id === pageId);
+  const store = getStore();
+  const idx = store.pages.findIndex((p) => p.id === pageId);
   if (idx >= 0) {
-    SEED_PAGES.splice(idx, 1);
+    store.pages.splice(idx, 1);
+    saveStore(store);
   }
   return { success: true };
 }
@@ -1273,8 +1282,9 @@ export async function saveNavigationMenu(
     }
   }
 
-  // In-memory update
-  const target = location === "HEADER" ? SEED_NAV_HEADER : SEED_NAV_FOOTER;
+  // Store fallback
+  const store = getStore();
+  const target = location === "HEADER" ? store.navHeader : store.navFooter;
   if (data.logoText !== undefined) target.logoText = data.logoText;
   if (data.logoUrl !== undefined) target.logoUrl = data.logoUrl;
   if (data.showAnnouncement !== undefined) target.showAnnouncement = data.showAnnouncement;
@@ -1289,6 +1299,7 @@ export async function saveNavigationMenu(
     isExternal: i.isExternal ?? false,
     columnName: i.columnName,
   }));
+  saveStore(store);
 
   return { success: true };
 }
@@ -1333,7 +1344,9 @@ export async function saveThemeConfig(
     }
   }
 
-  Object.assign(SEED_THEME, theme);
+  const store = getStore();
+  store.theme = { ...store.theme, ...theme };
+  saveStore(store);
   return { success: true };
 }
 
@@ -1368,12 +1381,14 @@ export async function addMediaAsset(
     }
   }
 
+  const store = getStore();
   const newAsset: MediaAssetItem = {
     ...asset,
     id,
     createdAt: new Date().toISOString(),
   };
-  SEED_MEDIA.unshift(newAsset);
+  store.media.unshift(newAsset);
+  saveStore(store);
   return { success: true, id };
 }
 
@@ -1392,9 +1407,11 @@ export async function deleteMediaAsset(assetId: string): Promise<{ success: bool
     }
   }
 
-  const idx = SEED_MEDIA.findIndex((m) => m.id === assetId);
+  const store = getStore();
+  const idx = store.media.findIndex((m) => m.id === assetId);
   if (idx >= 0) {
-    SEED_MEDIA.splice(idx, 1);
+    store.media.splice(idx, 1);
+    saveStore(store);
   }
   return { success: true };
 }
@@ -1445,14 +1462,15 @@ export async function saveRedirectRule(rule: {
     }
   }
 
-  const idx = SEED_REDIRECTS.findIndex((r) => r.id === rule.id || r.sourcePath === rule.sourcePath);
+  const store = getStore();
+  const idx = store.redirects.findIndex((r) => r.id === rule.id || r.sourcePath === rule.sourcePath);
   if (idx >= 0) {
-    SEED_REDIRECTS[idx] = {
-      ...SEED_REDIRECTS[idx],
+    store.redirects[idx] = {
+      ...store.redirects[idx],
       ...rule,
     };
   } else {
-    SEED_REDIRECTS.push({
+    store.redirects.push({
       id: rule.id || `red-${Date.now()}`,
       sourcePath: rule.sourcePath,
       targetPath: rule.targetPath,
@@ -1461,6 +1479,7 @@ export async function saveRedirectRule(rule: {
       createdAt: new Date().toISOString(),
     });
   }
+  saveStore(store);
   return { success: true };
 }
 
@@ -1479,10 +1498,78 @@ export async function deleteRedirectRule(ruleId: string): Promise<{ success: boo
     }
   }
 
-  const idx = SEED_REDIRECTS.findIndex((r) => r.id === ruleId);
+  const store = getStore();
+  const idx = store.redirects.findIndex((r) => r.id === ruleId);
   if (idx >= 0) {
-    SEED_REDIRECTS.splice(idx, 1);
+    store.redirects.splice(idx, 1);
+    saveStore(store);
   }
+  return { success: true };
+}
+
+/**
+ * Get Site Settings
+ */
+export async function getSiteSettings(): Promise<SiteSettingsData> {
+  const hasDb = await isDatabaseConnected();
+  if (hasDb) {
+    try {
+      const records = await prisma.siteSetting.findMany();
+      if (records.length > 0) {
+        const settingsMap: Record<string, string> = {};
+        records.forEach((r) => {
+          settingsMap[r.key] = r.value;
+        });
+        const defaults = getStore().settings;
+        return {
+          ...defaults,
+          siteTitle: settingsMap.siteTitle || defaults.siteTitle,
+          siteDescription: settingsMap.siteDescription || defaults.siteDescription,
+          tagline: settingsMap.tagline || defaults.tagline,
+          announcementText: settingsMap.announcementText || defaults.announcementText,
+          announcementLink: settingsMap.announcementLink || defaults.announcementLink,
+          showAnnouncement: settingsMap.showAnnouncement === "true",
+          contactEmail: settingsMap.contactEmail || defaults.contactEmail,
+          maintenanceMode: settingsMap.maintenanceMode === "true",
+          keywords: settingsMap.keywords ? JSON.parse(settingsMap.keywords) : defaults.keywords,
+          ogImage: settingsMap.ogImage || defaults.ogImage,
+          robotsDirective: settingsMap.robotsDirective || defaults.robotsDirective,
+          googleVerification: settingsMap.googleVerification || defaults.googleVerification,
+        };
+      }
+    } catch (e) {
+      console.warn("DB query error in getSiteSettings:", e);
+    }
+  }
+  return getStore().settings;
+}
+
+/**
+ * Save Site Settings
+ */
+export async function saveSiteSettings(
+  settings: Partial<SiteSettingsData>,
+  userId?: string
+): Promise<{ success: boolean; error?: string }> {
+  const hasDb = await isDatabaseConnected();
+  if (hasDb) {
+    try {
+      for (const [key, value] of Object.entries(settings)) {
+        const strVal = typeof value === "object" ? JSON.stringify(value) : String(value);
+        await prisma.siteSetting.upsert({
+          where: { key },
+          update: { value: strVal, updatedById: userId },
+          create: { key, value: strVal, updatedById: userId },
+        });
+      }
+    } catch (e: any) {
+      console.warn("DB saveSiteSettings error:", e);
+    }
+  }
+
+  const store = getStore();
+  store.settings = { ...store.settings, ...settings };
+  saveStore(store);
   return { success: true };
 }
 
@@ -1671,13 +1758,15 @@ export async function saveNetwork(data: Partial<NetworkItem>): Promise<{ success
     }
   }
 
-  // Update in-memory seed list
-  const idx = SEED_NETWORKS.findIndex((n) => n.slug === networkItem.slug || n.id === networkItem.id);
+  // Update store
+  const store = getStore();
+  const idx = store.networks.findIndex((n) => n.slug === networkItem.slug || n.id === networkItem.id);
   if (idx >= 0) {
-    SEED_NETWORKS[idx] = networkItem;
+    store.networks[idx] = networkItem;
   } else {
-    SEED_NETWORKS.unshift(networkItem);
+    store.networks.unshift(networkItem);
   }
+  saveStore(store);
 
   return { success: true, network: networkItem };
 }
@@ -1697,9 +1786,11 @@ export async function deleteNetwork(idOrSlug: string): Promise<{ success: boolea
     }
   }
 
-  const idx = SEED_NETWORKS.findIndex((n) => n.id === idOrSlug || n.slug === idOrSlug);
+  const store = getStore();
+  const idx = store.networks.findIndex((n) => n.id === idOrSlug || n.slug === idOrSlug);
   if (idx >= 0) {
-    SEED_NETWORKS.splice(idx, 1);
+    store.networks.splice(idx, 1);
+    saveStore(store);
   }
 
   return { success: true };
@@ -1725,12 +1816,14 @@ export async function saveCommandTemplate(data: Partial<CommandTemplateItem>): P
     lastVerifiedAt: new Date().toISOString(),
   };
 
-  const idx = SEED_COMMAND_TEMPLATES.findIndex((t) => t.id === template.id || t.slug === template.slug);
+  const store = getStore();
+  const idx = store.commandTemplates.findIndex((t) => t.id === template.id || t.slug === template.slug);
   if (idx >= 0) {
-    SEED_COMMAND_TEMPLATES[idx] = template;
+    store.commandTemplates[idx] = template;
   } else {
-    SEED_COMMAND_TEMPLATES.unshift(template);
+    store.commandTemplates.unshift(template);
   }
+  saveStore(store);
 
   return { success: true, template };
 }
@@ -1739,9 +1832,11 @@ export async function saveCommandTemplate(data: Partial<CommandTemplateItem>): P
  * Delete a Command Template
  */
 export async function deleteCommandTemplate(idOrSlug: string): Promise<{ success: boolean }> {
-  const idx = SEED_COMMAND_TEMPLATES.findIndex((t) => t.id === idOrSlug || t.slug === idOrSlug);
+  const store = getStore();
+  const idx = store.commandTemplates.findIndex((t) => t.id === idOrSlug || t.slug === idOrSlug);
   if (idx >= 0) {
-    SEED_COMMAND_TEMPLATES.splice(idx, 1);
+    store.commandTemplates.splice(idx, 1);
+    saveStore(store);
   }
   return { success: true };
 }
@@ -1764,12 +1859,14 @@ export async function saveTroubleshooting(data: Partial<TroubleshootingItem>): P
     tags: Array.isArray(data.tags) ? data.tags : ["General", "Troubleshooting"],
   };
 
-  const idx = SEED_TROUBLESHOOTING.findIndex((t) => t.id === item.id || t.slug === item.slug);
+  const store = getStore();
+  const idx = store.troubleshooting.findIndex((t) => t.id === item.id || t.slug === item.slug);
   if (idx >= 0) {
-    SEED_TROUBLESHOOTING[idx] = item;
+    store.troubleshooting[idx] = item;
   } else {
-    SEED_TROUBLESHOOTING.unshift(item);
+    store.troubleshooting.unshift(item);
   }
+  saveStore(store);
 
   return { success: true, item };
 }
@@ -1778,9 +1875,11 @@ export async function saveTroubleshooting(data: Partial<TroubleshootingItem>): P
  * Delete a Troubleshooting item
  */
 export async function deleteTroubleshooting(idOrSlug: string): Promise<{ success: boolean }> {
-  const idx = SEED_TROUBLESHOOTING.findIndex((t) => t.id === idOrSlug || t.slug === idOrSlug);
+  const store = getStore();
+  const idx = store.troubleshooting.findIndex((t) => t.id === idOrSlug || t.slug === idOrSlug);
   if (idx >= 0) {
-    SEED_TROUBLESHOOTING.splice(idx, 1);
+    store.troubleshooting.splice(idx, 1);
+    saveStore(store);
   }
   return { success: true };
 }
@@ -1814,12 +1913,14 @@ export async function saveOpportunity(data: Partial<OpportunityItem>): Promise<{
     tasksCount: data.tasksCount,
   };
 
-  const idx = SEED_OPPORTUNITIES.findIndex((o) => o.id === opp.id || o.slug === opp.slug);
+  const store = getStore();
+  const idx = store.opportunities.findIndex((o) => o.id === opp.id || o.slug === opp.slug);
   if (idx >= 0) {
-    SEED_OPPORTUNITIES[idx] = opp;
+    store.opportunities[idx] = opp;
   } else {
-    SEED_OPPORTUNITIES.unshift(opp);
+    store.opportunities.unshift(opp);
   }
+  saveStore(store);
 
   return { success: true, opportunity: opp };
 }
@@ -1828,9 +1929,11 @@ export async function saveOpportunity(data: Partial<OpportunityItem>): Promise<{
  * Delete an Opportunity
  */
 export async function deleteOpportunity(idOrSlug: string): Promise<{ success: boolean }> {
-  const idx = SEED_OPPORTUNITIES.findIndex((o) => o.id === idOrSlug || o.slug === idOrSlug);
+  const store = getStore();
+  const idx = store.opportunities.findIndex((o) => o.id === idOrSlug || o.slug === idOrSlug);
   if (idx >= 0) {
-    SEED_OPPORTUNITIES.splice(idx, 1);
+    store.opportunities.splice(idx, 1);
+    saveStore(store);
   }
   return { success: true };
 }

@@ -22,6 +22,22 @@ import { Button } from "../ui/button";
 export function Navbar() {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [announcement, setAnnouncement] = React.useState<{ show: boolean; text: string; link: string } | null>(null);
+
+  React.useEffect(() => {
+    fetch("/api/admin/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.settings && data.settings.showAnnouncement && data.settings.announcementText) {
+          setAnnouncement({
+            show: true,
+            text: data.settings.announcementText,
+            link: data.settings.announcementLink || "/tools/hardware-checker",
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const navLinks = [
     { href: "/networks", label: "Networks", icon: Layers },
@@ -38,6 +54,17 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/90 backdrop-blur-md">
+      {announcement?.show && (
+        <div className="bg-gradient-to-r from-brand-purple via-indigo-600 to-brand-cyan text-white text-xs py-1.5 px-4 text-center font-medium flex items-center justify-center gap-2 border-b border-brand-purple/40 shadow-sm animate-fade-in">
+          <span>{announcement.text}</span>
+          {announcement.link && (
+            <Link href={announcement.link} className="underline hover:text-white font-bold ml-1 inline-flex items-center gap-0.5">
+              <span>Explore</span>
+              <span>&rarr;</span>
+            </Link>
+          )}
+        </div>
+      )}
       <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
         {/* Brand Logo: Design Mark on left, Name in front */}
         <Logo size="md" href="/" />
