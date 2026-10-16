@@ -765,6 +765,80 @@ sudo chown -R nodeoperator:nodeoperator /var/lib/node`,
       },
     ],
   },
+  {
+    id: "guide-babylon-genesis",
+    title: "Deploying a Babylon Bitcoin Staking Testnet Node",
+    slug: "deploying-babylon-bitcoin-staking-testnet-node",
+    excerpt: "Run a Babylon testnet node to participate in Bitcoin timestamping protocol verification with CometBFT consensus.",
+    content: `Babylon brings Bitcoin-level security to Proof-of-Stake blockchains through innovative Bitcoin timestamping protocols. This guide walks through initializing the babylond daemon and synchronizing with the testnet.`,
+    status: "PUBLISHED",
+    difficulty: "INTERMEDIATE",
+    estimatedMinutes: 35,
+    authorName: "NodeDrops Infrastructure Team",
+    reviewerName: "Alex Vance",
+    publishedAt: "2026-04-05T10:00:00Z",
+    lastVerifiedAt: "2026-04-05T10:00:00Z",
+    category: "Bitcoin Staking & Security",
+    networkSlug: "babylon",
+    tags: ["Babylon", "Bitcoin", "Staking", "CometBFT", "Cosmos"],
+    steps: [
+      {
+        orderIndex: 0,
+        title: "Download and Install babylond Binary",
+        explanation: "Retrieve the verified release binary from the Babylon GitHub repository and add it to your PATH.",
+        command: `wget https://github.com/babylonchain/babylon/releases/download/v0.8.5/babylond_0.8.5_linux_amd64.tar.gz
+tar -xvf babylond_0.8.5_linux_amd64.tar.gz
+sudo mv babylond /usr/local/bin/
+babylond version`,
+        expectedOutput: "0.8.5",
+        verificationInstructions: "Ensure 'babylond version' returns v0.8.5.",
+      },
+      {
+        orderIndex: 1,
+        title: "Initialize Node and Configure Moniker",
+        explanation: "Initialize node keys and genesis state for the bbn-test-3 network.",
+        command: `babylond init MyNode --chain-id bbn-test-3
+curl -s https://github.com/babylonchain/networks/raw/main/bbn-test-3/genesis.json > ~/.babylond/config/genesis.json`,
+        expectedOutput: "genesis.json downloaded",
+        verificationInstructions: "Verify sha256 checksum of genesis.json matches official release.",
+      },
+    ],
+  },
+  {
+    id: "guide-solana-validator",
+    title: "Solana Testnet Validator Node Deployment & Performance Tuning",
+    slug: "solana-testnet-validator-deployment-tuning",
+    excerpt: "Enterprise Linux setup for Solana validator nodes: sysctl kernel tuning, RAM disk account storage, and gossip verification.",
+    content: `Solana requires extraordinary system throughput and low latency. This guide covers the critical Linux kernel tuning, file descriptor limits, and CPU governor modes essential for running a validator without falling behind slot production.`,
+    status: "PUBLISHED",
+    difficulty: "ADVANCED",
+    estimatedMinutes: 50,
+    authorName: "Solana Ops Specialist",
+    reviewerName: "Elena Rostova",
+    publishedAt: "2026-04-08T15:00:00Z",
+    lastVerifiedAt: "2026-04-08T15:00:00Z",
+    category: "High-Throughput Consensus",
+    networkSlug: "solana",
+    tags: ["Solana", "Validator", "Kernel Tuning", "NVMe", "Linux"],
+    steps: [
+      {
+        orderIndex: 0,
+        title: "Kernel and Network Sysctl Optimization",
+        explanation: "Configure Linux socket buffer sizes and memory maps to support Solana's high network packet velocity.",
+        command: `sudo bash -c "cat > /etc/sysctl.d/21-solana-validator.conf <<EOF
+net.core.rmem_max=134217728
+net.core.rmem_default=134217728
+net.core.wmem_max=134217728
+net.core.wmem_default=134217728
+vm.max_map_count=1000000
+fs.file-max=1000000
+EOF"
+sudo sysctl -p /etc/sysctl.d/21-solana-validator.conf`,
+        expectedOutput: "net.core.rmem_max = 134217728",
+        verificationInstructions: "Verify sysctl settings applied without errors.",
+      },
+    ],
+  },
 ];
 
 export const SEED_OPPORTUNITIES: OpportunityItem[] = [

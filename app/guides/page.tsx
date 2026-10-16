@@ -1,175 +1,239 @@
 import Link from "next/link";
-import { BookOpen, Search, Clock, ArrowRight, ShieldCheck } from "lucide-react";
+import {
+  BookOpen,
+  Search,
+  Clock,
+  ArrowRight,
+  ShieldCheck,
+  Terminal,
+  Cpu,
+  Zap,
+  Sparkles,
+  Layers,
+  Wrench,
+  CheckCircle2,
+  ExternalLink,
+} from "lucide-react";
 import { getGuides } from "@/lib/services/data-service";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { GuidesHeroTerminal } from "@/components/guides/guides-hero-terminal";
+import { GuidesHubClient } from "@/components/guides/guides-hub-client";
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
-  title: "Node Setup & Operational Guides",
-  description: "Tested step-by-step technical guides for running Ethereum, Celestia, Berachain, and Cosmos nodes.",
+  title: "Node Engineering & Validator Guides | NodeDrops",
+  description:
+    "Production-tested, reproducible node deployment recipes for Ethereum, Celestia, Solana, Babylon, and Berachain.",
 };
 
-export default async function GuidesPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string; difficulty?: "BEGINNER" | "INTERMEDIATE" | "ADVANCED"; page?: string }>;
-}) {
-  const resolvedParams = await searchParams;
-  const search = resolvedParams.q || "";
-  const difficulty = resolvedParams.difficulty;
-  const page = parseInt(resolvedParams.page || "1", 10);
-
-  const data = await getGuides({
-    search,
-    difficulty,
-    page,
-    limit: 10,
-  });
+export default async function GuidesPage() {
+  const guidesRes = await getGuides({ limit: 50 });
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-6xl">
-      {/* Header */}
-      <div className="space-y-4 mb-8">
-        <div className="inline-flex items-center gap-1.5 text-xs text-brand-cyan font-mono">
-          <BookOpen className="w-3.5 h-3.5" />
-          <span>PRODUCTION-TESTED DOCUMENTATION</span>
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-          Node Setup Guides
-        </h1>
-        <p className="text-sm text-text-secondary max-w-2xl">
-          Comprehensive, reproducible technical tutorials covering system preparation, consensus & execution
-          client pairing, firewall rules, and verification checklists.
-        </p>
+    <div className="flex flex-col min-h-screen">
+      {/* 1. DEVELOPER HERO WITH LIVE TERMINAL EMULATOR */}
+      <section className="relative pt-16 pb-16 overflow-hidden border-b border-border/80 bg-radial-glow">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Left Column: Heading & Mission */}
+            <div className="lg:col-span-6 space-y-5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-purple/40 bg-brand-purple/10 text-brand-purple-light text-xs font-mono">
+                <Sparkles className="w-3.5 h-3.5 text-brand-cyan" />
+                <span>DEV RUNBOOKS // PRODUCTION ARCHITECTURE</span>
+              </div>
 
-        {/* Controls */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <Link href="/guides">
-              <Button variant={!difficulty ? "primary" : "secondary"} size="sm" className="text-xs">
-                All Difficulties
-              </Button>
-            </Link>
-            <Link href="/guides?difficulty=BEGINNER">
-              <Button variant={difficulty === "BEGINNER" ? "primary" : "secondary"} size="sm" className="text-xs">
-                Beginner
-              </Button>
-            </Link>
-            <Link href="/guides?difficulty=INTERMEDIATE">
-              <Button variant={difficulty === "INTERMEDIATE" ? "primary" : "secondary"} size="sm" className="text-xs">
-                Intermediate
-              </Button>
-            </Link>
-            <Link href="/guides?difficulty=ADVANCED">
-              <Button variant={difficulty === "ADVANCED" ? "primary" : "secondary"} size="sm" className="text-xs">
-                Advanced
-              </Button>
-            </Link>
-          </div>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white leading-[1.15]">
+                Node Engineering & <br />
+                <span className="text-gradient">Validator Runbooks</span>
+              </h1>
 
-          <form method="GET" action="/guides" className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-2.5 w-4 h-4 text-text-muted" />
-            <input
-              type="text"
-              name="q"
-              defaultValue={search}
-              placeholder="Search guides..."
-              className="w-full pl-9 pr-4 py-2 rounded-lg border border-border bg-background-secondary text-xs text-white placeholder:text-text-muted focus:outline-none focus:border-brand-purple"
-            />
-          </form>
-        </div>
-      </div>
+              <p className="text-sm sm:text-base text-text-secondary leading-relaxed max-w-xl">
+                Field-tested execution recipes, peer discovery, automated systemd services, and anti-slashing safeguards. Written for validators, infrastructure engineers, and aspiring node runners.
+              </p>
 
-      {/* Guide Listing */}
-      {data.items.length === 0 ? (
-        <div className="text-center py-16 border border-border/60 rounded-xl bg-background-card/50">
-          <BookOpen className="w-10 h-10 text-text-muted mx-auto mb-3" />
-          <h3 className="text-base font-semibold text-white">No guides found</h3>
-          <p className="text-xs text-text-muted mt-1">
-            Try adjusting your search criteria or difficulty filter.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {data.items.map((guide) => (
-            <Card key={guide.id} className="hover:border-border-glow transition-all">
-              <div className="p-6 flex flex-col md:flex-row items-start justify-between gap-6">
-                <div className="space-y-2 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={guide.difficulty.toLowerCase() as "beginner" | "intermediate" | "advanced"}>
-                      {guide.difficulty}
-                    </Badge>
-                    <span className="text-xs text-brand-cyan font-mono">{guide.category}</span>
-                    <span className="text-xs text-text-muted">•</span>
-                    <span className="flex items-center gap-1 text-xs text-text-muted font-mono">
-                      <Clock className="w-3.5 h-3.5" />
-                      {guide.estimatedMinutes} mins
-                    </span>
-                  </div>
-
-                  <h3 className="text-xl font-bold text-white hover:text-brand-purple-light transition-colors">
-                    <Link href={`/guides/${guide.slug}`}>{guide.title}</Link>
-                  </h3>
-
-                  <p className="text-xs text-text-secondary leading-relaxed line-clamp-2">
-                    {guide.excerpt}
-                  </p>
-
-                  <div className="flex flex-wrap items-center gap-2 pt-2">
-                    {guide.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-2 py-0.5 rounded bg-background-secondary text-[11px] text-text-muted border border-border/60"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
+              {/* Quick Specs Callouts */}
+              <div className="grid grid-cols-3 gap-3 pt-2 text-xs font-mono">
+                <div className="p-3 rounded-xl bg-dark-card border border-dark-card-border space-y-1">
+                  <div className="text-[10px] text-text-muted uppercase">Verified Guides</div>
+                  <div className="text-lg font-bold text-white">{guidesRes.items.length}+ Runbooks</div>
                 </div>
-
-                <div className="flex flex-col md:items-end justify-between self-stretch shrink-0 gap-3 border-t md:border-t-0 md:border-l border-border/40 pt-4 md:pt-0 md:pl-6">
-                  <div className="text-xs text-text-muted md:text-right">
-                    <div>Author: <span className="text-white">{guide.authorName}</span></div>
-                    {guide.reviewerName && (
-                      <div className="text-status-success flex items-center md:justify-end gap-1 mt-0.5">
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                        <span>Verified by {guide.reviewerName}</span>
-                      </div>
-                    )}
-                  </div>
-                  <Link href={`/guides/${guide.slug}`}>
-                    <Button variant="primary" size="sm" className="w-full md:w-auto text-xs gap-1.5">
-                      <span>Start Guide</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </Button>
-                  </Link>
+                <div className="p-3 rounded-xl bg-dark-card border border-dark-card-border space-y-1">
+                  <div className="text-[10px] text-text-muted uppercase">Zero Third-Party</div>
+                  <div className="text-lg font-bold text-brand-cyan">100% Native</div>
+                </div>
+                <div className="p-3 rounded-xl bg-dark-card border border-dark-card-border space-y-1">
+                  <div className="text-[10px] text-text-muted uppercase">Platform Spec</div>
+                  <div className="text-lg font-bold text-emerald-400">Linux LTS</div>
                 </div>
               </div>
-            </Card>
-          ))}
-        </div>
-      )}
+            </div>
 
-      {/* Pagination */}
-      {data.totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-12">
-          {Array.from({ length: data.totalPages }).map((_, i) => (
-            <Link
-              key={i}
-              href={`/guides?page=${i + 1}${difficulty ? `&difficulty=${difficulty}` : ""}${search ? `&q=${search}` : ""}`}
-            >
-              <Button
-                variant={data.page === i + 1 ? "primary" : "secondary"}
-                size="sm"
-                className="w-8 h-8 p-0 text-xs"
-              >
-                {i + 1}
-              </Button>
-            </Link>
-          ))}
+            {/* Right Column: Interactive Terminal Emulator */}
+            <div className="lg:col-span-6 flex justify-center lg:justify-end">
+              <GuidesHeroTerminal />
+            </div>
+          </div>
         </div>
-      )}
+      </section>
+
+      {/* 2. CURATED QUICKSTART LEARNING TRACKS (Like Rust Book / Modern Docs) */}
+      <section className="py-12 border-b border-border/80 bg-[#060810]">
+        <div className="container mx-auto px-4 max-w-7xl space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div className="text-xs uppercase tracking-wider font-semibold text-brand-purple">
+                Curated Engineering Tracks
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight mt-0.5">
+                Start Here: Step-by-Step Operator Pathways
+              </h2>
+            </div>
+            <span className="text-xs text-text-muted font-mono">
+              Designed for progressive mastery
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Track 1 */}
+            <div className="p-6 rounded-2xl border border-dark-card-border bg-dark-card hover:border-brand-purple/40 transition-all space-y-4 group">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  TRACK 01 // BEGINNER
+                </span>
+                <span className="text-xs text-text-muted font-mono">4 Modules • 25m</span>
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white group-hover:text-brand-purple-light transition-colors">
+                  Genesis to First Node
+                </h3>
+                <p className="text-xs text-text-secondary leading-relaxed mt-1">
+                  Master Linux server leasing, SSH key isolation, UFW firewall security, and spin up a lightweight Celestia DAS sampling node.
+                </p>
+              </div>
+              <div className="pt-2 border-t border-dark-card-border/60">
+                <Link
+                  href="/guides/setting-up-celestia-light-node-mocha"
+                  className="text-xs font-semibold text-brand-cyan hover:underline flex items-center gap-1"
+                >
+                  <span>Launch Track 01</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Track 2 */}
+            <div className="p-6 rounded-2xl border border-dark-card-border bg-dark-card hover:border-brand-purple/40 transition-all space-y-4 group">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/20">
+                  TRACK 02 // INTERMEDIATE
+                </span>
+                <span className="text-xs text-text-muted font-mono">5 Modules • 45m</span>
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white group-hover:text-brand-purple-light transition-colors">
+                  EVM Execution & PoS Consensus
+                </h3>
+                <p className="text-xs text-text-secondary leading-relaxed mt-1">
+                  Deploy paired Execution (Geth) and Consensus (Lighthouse) daemons with JWT Engine API authentication and state syncing.
+                </p>
+              </div>
+              <div className="pt-2 border-t border-dark-card-border/60">
+                <Link
+                  href="/guides/run-ethereum-sepolia-node-geth-lighthouse"
+                  className="text-xs font-semibold text-brand-cyan hover:underline flex items-center gap-1"
+                >
+                  <span>Launch Track 02</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Track 3 */}
+            <div className="p-6 rounded-2xl border border-dark-card-border bg-dark-card hover:border-brand-purple/40 transition-all space-y-4 group">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-brand-purple/10 text-brand-purple border border-brand-purple/20">
+                  TRACK 03 // ADVANCED
+                </span>
+                <span className="text-xs text-text-muted font-mono">6 Modules • 60m</span>
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white group-hover:text-brand-purple-light transition-colors">
+                  Validator Security & Hardening
+                </h3>
+                <p className="text-xs text-text-secondary leading-relaxed mt-1">
+                  Linux kernel sysctl network optimization, remote signer key isolation, Fail2ban brute force defense, and Prometheus telemetry.
+                </p>
+              </div>
+              <div className="pt-2 border-t border-dark-card-border/60">
+                <Link
+                  href="/guides/linux-security-hardening-node-operators"
+                  className="text-xs font-semibold text-brand-cyan hover:underline flex items-center gap-1"
+                >
+                  <span>Launch Track 03</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. INTERACTIVE GUIDES REPOSITORY & CLIENT FILTER HUB */}
+      <section className="py-12 flex-1">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <GuidesHubClient initialGuides={guidesRes.items} />
+        </div>
+      </section>
+
+      {/* 4. DEVELOPER UTILITY TOOLS PROMO */}
+      <section className="py-12 border-t border-border/80 bg-gradient-to-b from-[#070a14] to-[#04060c]">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Tool 1 */}
+            <div className="p-6 rounded-2xl border border-dark-card-border bg-dark-card space-y-3">
+              <div className="flex items-center gap-2 text-xs font-mono text-brand-cyan uppercase">
+                <Cpu className="w-4 h-4" />
+                <span>Pre-Flight Validation</span>
+              </div>
+              <h3 className="text-lg font-bold text-white">
+                Check Server Hardware Compatibility
+              </h3>
+              <p className="text-xs text-text-secondary leading-relaxed">
+                Before purchasing or provisioning a VPS, verify whether your CPU cores, RAM, and NVMe disk meet the consensus network requirements.
+              </p>
+              <div className="pt-2">
+                <Link href="/tools/hardware-checker">
+                  <Button variant="outline" size="sm" className="border-dark-card-border text-xs gap-1.5">
+                    <span>Evaluate Server Specs</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Tool 2 */}
+            <div className="p-6 rounded-2xl border border-dark-card-border bg-dark-card space-y-3">
+              <div className="flex items-center gap-2 text-xs font-mono text-brand-purple uppercase">
+                <Terminal className="w-4 h-4" />
+                <span>Zero-Error Configuration</span>
+              </div>
+              <h3 className="text-lg font-bold text-white">
+                Automated Command & Systemd Generator
+              </h3>
+              <p className="text-xs text-text-secondary leading-relaxed">
+                Generate production-ready systemd service files, Docker Compose templates, and initialization flags customized to your directory paths.
+              </p>
+              <div className="pt-2">
+                <Link href="/tools/command-builder">
+                  <Button variant="outline" size="sm" className="border-dark-card-border text-xs gap-1.5">
+                    <span>Generate Commands</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
