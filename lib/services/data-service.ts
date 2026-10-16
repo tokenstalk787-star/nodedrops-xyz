@@ -1911,6 +1911,9 @@ export async function saveOpportunity(data: Partial<OpportunityItem>): Promise<{
     stage: data.stage,
     guideSlug: data.guideSlug,
     tasksCount: data.tasksCount,
+    fundingRaised: data.fundingRaised,
+    tasks: data.tasks,
+    logoUrl: data.logoUrl,
   };
 
   const store = getStore();

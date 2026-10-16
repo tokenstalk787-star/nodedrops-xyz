@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ChevronDown, HelpCircle, ArrowRight, ShieldCheck } from "lucide-react";
+import { ChevronDown, HelpCircle, ArrowRight, ShieldCheck, X, Sparkles, Cpu, Bell } from "lucide-react";
 
 interface FAQItem {
   question: string;
@@ -11,65 +11,66 @@ interface FAQItem {
 
 const FAQ_LIST: FAQItem[] = [
   {
-    question: "What is an incentivized blockchain node or testnet airdrop?",
+    question: "What is an airdrop / incentivized testnet?",
     answer:
       "Before deploying to mainnet, Layer 1 and Layer 2 blockchains launch incentivized testnets to test peer discovery, state sync, data availability, and Byzantine fault tolerance under real-world loads. Node operators who maintain uptime, produce blocks, and report telemetry are frequently rewarded with native token grants, retroactive airdrops, or priority validator set allocations.",
   },
   {
-    question: "What does the reward status 'Confirmed' vs 'Potential' mean?",
+    question: "What does the reward type 'Potential' and 'Confirmed' mean and what is the difference between them?",
     answer:
-      "On NodeDrops.xyz, 'Confirmed' indicates that the blockchain foundation or core development team has published an official blog or documentation confirming a dedicated token allocation for node operators. 'Potential' means the project tracks testnet points or leaderboards without an explicit legal guarantee. 'Public Spec' denotes public testing networks (like Ethereum Sepolia) operated purely for developer tooling.",
+      "On NodeDrops.xyz, 'Confirmed' indicates that the blockchain foundation or core development team has published official documentation or a blog confirming dedicated token allocations for testnet node operators. 'Potential' means the project tracks testnet points or leaderboards without an explicit legal guarantee. 'Public Spec' denotes public testing networks (like Ethereum Sepolia) operated purely for developer tooling.",
   },
   {
-    question: "How much does running a testnet node cost in monthly VPS hosting?",
+    question: "How to do these activities and begin running?",
     answer:
-      "Costs vary based on hardware specifications: lightweight Data Availability (DAS) nodes like Celestia run smoothly on a $10 - $15/mo VPS (2 vCPU, 4GB RAM). Standard EVM and Cosmos nodes (like Babylon or Berachain) typically cost $25 - $45/mo (4-8 vCPU, 16-32GB RAM). Enterprise high-throughput validators (like Solana) require dedicated bare-metal servers costing $120+/mo. You can verify your exact VPS specs in our free Hardware Checker.",
+      "Start by reviewing the hardware prerequisites in our free Hardware Checker. Lease an Ubuntu 22.04 LTS VPS from an infrastructure provider (e.g., Hetzner, Contabo, AWS). Follow our verified step-by-step setup guides to install dependencies, initialize client daemons, configure systemd automation, and submit your node peer ID or validator address.",
   },
   {
-    question: "Do I need to connect a crypto wallet to use NodeDrops.xyz?",
+    question: "What is an unexpected airdrop and snapshot?",
     answer:
-      "Never. NodeDrops.xyz strictly maintains a Zero-Wallet Requirement policy. You will never be asked to connect a browser wallet, sign transactions, or share private keys on our website. All runbooks, hardware calculators, and command builders are 100% free, open, and walletless.",
+      "An unexpected airdrop occurs when a protocol distributes governance tokens to past infrastructure participants without prior announcement. A 'snapshot' is an on-chain record of block heights capturing which node operators or delegators were actively syncing and producing blocks at that exact moment.",
   },
   {
-    question: "What is validator slashing and how do I prevent it?",
+    question: "What does 'Participate' mean?",
     answer:
-      "Slashing is an on-chain automated penalty where a portion of a validator's stake is burned due to malicious or erroneous behavior—most commonly double-signing the same block height or prolonged offline downtime. Our technical guides provide systemd sandboxing, UFW firewall isolation, and sentry node architectures to prevent double-signing.",
+      "Participating means configuring and actively executing node client software on your server. For Light Nodes (like Celestia), participation involves sampling data availability blocks. For Validators (like Berachain or Babylon), it requires maintaining 99%+ uptime and participating in PoS consensus round voting.",
   },
   {
-    question: "How do I choose between a Light Node, Full Node, and Validator?",
+    question: "What are the criteria and what is the difference between them?",
     answer:
-      "A Light Node (e.g. Celestia DAS) only samples block data without storing chain history—ideal for beginners with low bandwidth. A Full Node downloads, verifies, and stores the full ledger state—ideal for RPC queries and dapp developers. A Validator actively signs blocks and participates in consensus—requiring high availability, static IPs, and security hardening.",
+      "Criteria vary across projects: some evaluate total uptime percentage (e.g. >98%), others check block proposal counts, governance votes, low peer latency, or bug reports submitted during stress testing phases.",
   },
   {
-    question: "How are node campaigns verified and maintained on NodeDrops.xyz?",
+    question: "How to build a technical portfolio to get an airdrop?",
     answer:
-      "Every runbook and opportunity is field-tested on pristine Ubuntu 22.04 / 24.04 LTS servers by our infrastructure team before publication. We verify SHA-256 release checksums, test RPC endpoints, verify port forwarding, and re-audit campaigns weekly for network upgrades and hard forks.",
+      "Operators build reputational credibility by maintaining continuous uptime across multiple testnets, keeping detailed GitHub telemetry logs, hosting public RPC endpoints, and participating in early devnet phases before campaigns reach mainstream saturation.",
+  },
+  {
+    question: "How to avoid scams and protect your wallet and nodes?",
+    answer:
+      "NodeDrops.xyz strictly maintains a Zero-Wallet Requirement policy. Never share your mnemonic seed phrase or private keys. Never connect browser wallets to unverified third-party websites claiming to grant testnet node access. Always audit shell scripts before executing with sudo permissions.",
   },
 ];
 
 export function HomeFaqSection() {
   const [openIndex, setOpenIndex] = React.useState<number | null>(0); // First open by default
+  const [showPromoBanner, setShowPromoBanner] = React.useState(true);
 
   const toggle = (idx: number) => {
     setOpenIndex((current) => (current === idx ? null : idx));
   };
 
   return (
-    <section className="py-16 border-b border-border/80 bg-[#070a14]" id="faq">
-      <div className="container mx-auto px-4 max-w-5xl space-y-8">
-        {/* Header */}
+    <section className="py-12 border-b border-dark-card-border/80 bg-[#070a14]" id="faq">
+      <div className="container mx-auto px-4 max-w-5xl space-y-10">
+        {/* FAQ Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-dark-card-border">
-          <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-1.5 text-xs font-mono text-brand-purple-light uppercase tracking-wider">
-              <HelpCircle className="w-3.5 h-3.5" />
-              <span>Knowledge Base & Operator FAQ</span>
-            </div>
+          <div className="space-y-1">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              Frequently Asked Questions (FAQ)
+              FAQ
             </h2>
-            <p className="text-xs sm:text-sm text-text-secondary font-sans max-w-2xl">
-              Essential knowledge on node testnets, validator economics, server sizing,
-              and security protocols.
+            <p className="text-xs sm:text-sm text-text-secondary font-sans">
+              Frequently asked questions regarding incentivized testnets, token airdrops, and node operations.
             </p>
           </div>
 
@@ -82,8 +83,8 @@ export function HomeFaqSection() {
           </Link>
         </div>
 
-        {/* Accordion List */}
-        <div className="space-y-3">
+        {/* Accordion List (CryptoRank Style Clean Expanders) */}
+        <div className="space-y-2.5">
           {FAQ_LIST.map((item, idx) => {
             const isOpen = openIndex === idx;
             return (
@@ -91,8 +92,8 @@ export function HomeFaqSection() {
                 key={idx}
                 className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
                   isOpen
-                    ? "border-brand-purple/40 bg-dark-card shadow-lg"
-                    : "border-dark-card-border bg-dark-card/60 hover:border-border"
+                    ? "border-brand-purple/40 bg-[#0b1020] shadow-lg"
+                    : "border-dark-card-border bg-[#0b1020]/60 hover:border-slate-600"
                 }`}
               >
                 <button
@@ -107,7 +108,7 @@ export function HomeFaqSection() {
                     className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border transition-transform duration-200 ${
                       isOpen
                         ? "bg-brand-purple/20 border-brand-purple/40 text-brand-purple-light rotate-180"
-                        : "bg-dark-bg border-dark-card-border text-text-muted"
+                        : "bg-[#070b16] border-dark-card-border text-text-muted"
                     }`}
                   >
                     <ChevronDown className="w-4 h-4" />
@@ -124,23 +125,50 @@ export function HomeFaqSection() {
           })}
         </div>
 
-        {/* Bottom Banner */}
-        <div className="rounded-2xl border border-brand-blue/30 bg-gradient-to-r from-brand-blue/10 via-brand-purple/10 to-transparent p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="space-y-1">
-            <h3 className="font-bold text-base text-white">
-              Have questions about your server hardware?
-            </h3>
-            <p className="text-xs text-text-secondary">
-              Use our interactive Hardware Checker to benchmark your CPU, RAM, and NVMe disk against node requirements.
-            </p>
+        {/* PROMOTIONAL BANNER (Exact Reference Image Style) */}
+        {showPromoBanner && (
+          <div className="relative rounded-2xl overflow-hidden p-6 sm:p-8 bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-900 border border-blue-400/30 shadow-2xl">
+            {/* Background glowing particles effect */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(255,255,255,0.15),_transparent_60%)] pointer-events-none" />
+
+            {/* Dismiss Button */}
+            <button
+              onClick={() => setShowPromoBanner(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-full bg-black/20 hover:bg-black/40 text-white/80 hover:text-white transition-colors"
+              title="Dismiss"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="relative z-10 max-w-xl space-y-3">
+              <span className="text-[10px] font-mono uppercase tracking-widest text-blue-200 font-bold">
+                Automated Node Telemetry & Tooling
+              </span>
+              <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                Track Algorithmic Deployments & Operator Telemetry
+              </h3>
+              <p className="text-xs sm:text-sm text-blue-100/90 leading-relaxed">
+                Automated real-time monitoring, hardware benchmarks, and verified testnet notifications to keep your nodes synchronized 24/7.
+              </p>
+
+              <div className="pt-2 flex items-center gap-3">
+                <Link
+                  href="/tools/hardware-checker"
+                  className="px-5 py-2.5 rounded-full bg-white hover:bg-slate-100 text-slate-950 font-bold text-xs font-sans transition-all shadow-lg inline-flex items-center gap-1.5"
+                >
+                  <span>Start Running A Node</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-blue-600" />
+                </Link>
+                <Link
+                  href="/guides"
+                  className="px-4 py-2.5 rounded-full bg-blue-900/40 hover:bg-blue-900/60 text-white text-xs font-mono border border-blue-400/40 transition-colors"
+                >
+                  View All Runbooks
+                </Link>
+              </div>
+            </div>
           </div>
-          <Link
-            href="/tools/hardware-checker"
-            className="px-4 py-2.5 rounded-xl bg-brand-blue hover:bg-brand-blue-light text-white text-xs font-mono font-medium transition-colors shrink-0 shadow-md"
-          >
-            Launch Hardware Checker
-          </Link>
-        </div>
+        )}
       </div>
     </section>
   );

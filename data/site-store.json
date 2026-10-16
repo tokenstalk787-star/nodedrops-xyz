@@ -824,6 +824,31 @@
   ],
   "opportunities": [
     {
+      "id": "opp-linea-zk",
+      "projectName": "Linea zkEVM Prover & Node",
+      "slug": "linea-zkevm-prover-node",
+      "description": "Consensys zkEVM Layer 2 network. Deploy follower nodes and verify zero-knowledge state transitions.",
+      "campaignType": "zkEVM Node Operator",
+      "networkSlug": "linea",
+      "officialAnnouncementUrl": "https://linea.build",
+      "officialDocumentationUrl": "https://docs.linea.build",
+      "startsAt": "2026-01-01T00:00:00Z",
+      "endsAt": "2026-12-31T23:59:59Z",
+      "eligibility": "Open to operators running Geth-based Linea clients with RPC synchronization.",
+      "rewardStatus": "CONFIRMED",
+      "campaignStatus": "ACTIVE",
+      "verificationStatus": "VERIFIED",
+      "lastCheckedAt": "2026-04-15T12:00:00Z",
+      "ticker": "LINEA",
+      "nodeType": "Full Node / RPC",
+      "vpsCost": "~$25 - $45/mo",
+      "stage": "Mainnet Alpha",
+      "guideSlug": "setting-up-celestia-light-node-mocha",
+      "tasksCount": 4,
+      "fundingRaised": "$725M",
+      "tasks": ["Node Run", "Incentivized", "Snapshot Q2", "Testnet Faucet"]
+    },
+    {
       "id": "opp-celestia-mocha",
       "projectName": "Celestia Data Availability Node",
       "slug": "celestia-mocha-light-node-campaign",
@@ -844,7 +869,9 @@
       "vpsCost": "~$10 - $15/mo",
       "stage": "Mocha-4 Testnet",
       "guideSlug": "setting-up-celestia-light-node-mocha",
-      "tasksCount": 3
+      "tasksCount": 3,
+      "fundingRaised": "$155M",
+      "tasks": ["Light Node", "DAS Sampling", "Mocha-4", "Telemetry"]
     },
     {
       "id": "opp-berachain-bartio",
@@ -867,7 +894,9 @@
       "vpsCost": "~$35 - $60/mo",
       "stage": "bArtio V2 Testnet",
       "guideSlug": "berachain-bartio-testnet-full-node-guide",
-      "tasksCount": 4
+      "tasksCount": 4,
+      "fundingRaised": "$142M",
+      "tasks": ["Validator Run", "bArtio V2", "Telemetry Node", "Proof of Liquidity"]
     },
     {
       "id": "opp-babylon-staking",
@@ -890,7 +919,9 @@
       "vpsCost": "~$20 - $35/mo",
       "stage": "bbn-test-3 Phase 2",
       "guideSlug": "deploying-babylon-bitcoin-staking-testnet-node",
-      "tasksCount": 3
+      "tasksCount": 3,
+      "fundingRaised": "$70M",
+      "tasks": ["Signet Finality", "CometBFT", "Testnet Faucet"]
     },
     {
       "id": "opp-eth-sepolia",
@@ -1177,12 +1208,12 @@
   ],
   "telemetry": {
     "viewsByPath": {
-      "/": 38,
+      "/": 39,
       "/networks": 24,
       "/guides": 31,
       "/tools/hardware-checker": 19,
       "/opportunities": 27,
-      "/admin": 3,
+      "/admin": 4,
       "/admin/footer": 2,
       "/admin/builder": 4,
       "/admin/pages": 3,
@@ -1193,8 +1224,22 @@
       "/admin/analytics": 1,
       "/admin/settings": 1
     },
-    "totalViews": 158,
+    "totalViews": 160,
     "events": [
+      {
+        "id": "tel-1792169815362-pmuf",
+        "path": "/",
+        "referrer": "",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T16:56:55.362Z"
+      },
+      {
+        "id": "tel-1792169791164-0hat",
+        "path": "/admin",
+        "referrer": "http://localhost:3001/admin/footer",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T16:56:31.164Z"
+      },
       {
         "id": "tel-1792169698852-wbre",
         "path": "/admin/builder",

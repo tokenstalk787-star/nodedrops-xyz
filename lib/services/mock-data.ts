@@ -66,6 +66,9 @@ export interface OpportunityItem {
   stage?: string;
   guideSlug?: string;
   tasksCount?: number;
+  fundingRaised?: string;
+  tasks?: string[];
+  logoUrl?: string;
 }
 
 export interface TroubleshootingItem {
