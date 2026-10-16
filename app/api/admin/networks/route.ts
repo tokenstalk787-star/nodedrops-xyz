@@ -1,50 +1,56 @@
 import { NextRequest, NextResponse } from "next/server";
-import { networkFormSchema } from "@/lib/validation/schemas";
-import { prisma, isDatabaseConnected } from "@/lib/db/prisma";
-import { getCurrentUser, createAuditLog } from "@/lib/security/auth";
+import { getNetworks, saveNetwork, deleteNetwork } from "@/lib/services/data-service";
+
+export async function GET(req: NextRequest) {
+  try {
+    const searchParams = req.nextUrl.searchParams;
+    const search = searchParams.get("search") || undefined;
+    const type = (searchParams.get("type") as "MAINNET" | "TESTNET") || undefined;
+    const res = await getNetworks({ search, type, limit: 100 });
+    return NextResponse.json(res);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await getCurrentUser();
-    if (user && user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Only administrators can manage networks." }, { status: 403 });
-    }
-
     const body = await req.json();
-    const validated = networkFormSchema.safeParse(body);
-
-    if (!validated.success) {
-      return NextResponse.json(
-        { error: validated.error.errors[0]?.message || "Invalid network data." },
-        { status: 400 }
-      );
+    if (!body.name) {
+      return NextResponse.json({ error: "Network name is required." }, { status: 400 });
     }
+    const result = await saveNetwork(body);
+    return NextResponse.json(result);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
 
-    const hasDb = await isDatabaseConnected();
-    if (hasDb && user) {
-      const net = await prisma.network.create({
-        data: {
-          name: validated.data.name,
-          slug: validated.data.slug,
-          description: validated.data.description,
-          networkType: validated.data.networkType,
-          chainId: validated.data.chainId || null,
-          officialUrl: validated.data.officialUrl,
-          documentationUrl: validated.data.documentationUrl,
-          nodeTypes: validated.data.nodeTypes,
-          hardwareRequirements: validated.data.hardwareRequirements,
-          status: validated.data.status,
-          lastVerifiedAt: new Date(),
-        },
-      });
-
-      await createAuditLog("NETWORK_CREATED", "NETWORK", net.id, { slug: net.slug }, user.id);
-      return NextResponse.json({ success: true, networkId: net.id });
+export async function PUT(req: NextRequest) {
+  try {
+    const body = await req.json();
+    if (!body.slug && !body.id) {
+      return NextResponse.json({ error: "Network ID or slug is required for updating." }, { status: 400 });
     }
+    const result = await saveNetwork(body);
+    return NextResponse.json(result);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
 
-    return NextResponse.json({ success: true, message: "Network saved in demo mode." });
-  } catch (error: any) {
-    console.error("Admin network error:", error);
-    return NextResponse.json({ error: error.message || "Network save failure." }, { status: 500 });
+export async function DELETE(req: NextRequest) {
+  try {
+    const searchParams = req.nextUrl.searchParams;
+    const id = searchParams.get("id");
+    const slug = searchParams.get("slug");
+    const target = id || slug;
+    if (!target) {
+      return NextResponse.json({ error: "Target ID or slug is required for deletion." }, { status: 400 });
+    }
+    const result = await deleteNetwork(target);
+    return NextResponse.json(result);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

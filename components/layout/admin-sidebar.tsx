@@ -25,6 +25,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
+  Terminal,
+  HelpCircle,
 } from "lucide-react";
 
 export function AdminSidebar() {
@@ -46,12 +48,14 @@ export function AdminSidebar() {
       ],
     },
     {
-      group: "NODE CONTENT & TOOLS",
+      group: "NODE PLATFORM & TOOLS",
       items: [
-        { href: "/admin/tools", label: "Tools Management", icon: Wrench },
-        { href: "/admin/guides", label: "Guides & Content", icon: BookOpen },
-        { href: "/admin/networks", label: "Blockchain Networks", icon: Layers },
+        { href: "/admin/networks", label: "Networks Registry", icon: Layers },
+        { href: "/admin/guides", label: "Node Guides", icon: BookOpen },
         { href: "/admin/opportunities", label: "Opportunities", icon: Sparkles },
+        { href: "/admin/tools", label: "Hardware Rules Config", icon: Cpu },
+        { href: "/admin/command-templates", label: "Command Templates", icon: Terminal },
+        { href: "/admin/troubleshooting", label: "Troubleshooting Hub", icon: HelpCircle },
       ],
     },
     {

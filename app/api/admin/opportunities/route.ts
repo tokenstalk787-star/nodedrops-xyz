@@ -1,52 +1,60 @@
 import { NextRequest, NextResponse } from "next/server";
-import { opportunityFormSchema } from "@/lib/validation/schemas";
-import { prisma, isDatabaseConnected } from "@/lib/db/prisma";
-import { getCurrentUser, createAuditLog } from "@/lib/security/auth";
+import {
+  getOpportunities,
+  saveOpportunity,
+  deleteOpportunity,
+} from "@/lib/services/data-service";
+
+export async function GET(req: NextRequest) {
+  try {
+    const searchParams = req.nextUrl.searchParams;
+    const search = searchParams.get("search") || undefined;
+    const status = searchParams.get("status") || undefined;
+    const rewardStatus = searchParams.get("rewardStatus") || undefined;
+    const opps = await getOpportunities({ search, status, rewardStatus, limit: 100 });
+    return NextResponse.json(opps);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await getCurrentUser();
-    if (user && user.role !== "ADMIN" && user.role !== "EDITOR") {
-      return NextResponse.json({ error: "Unauthorized." }, { status: 403 });
-    }
-
     const body = await req.json();
-    const validated = opportunityFormSchema.safeParse(body);
-
-    if (!validated.success) {
-      return NextResponse.json(
-        { error: validated.error.errors[0]?.message || "Invalid opportunity data." },
-        { status: 400 }
-      );
+    if (!body.projectName) {
+      return NextResponse.json({ error: "Project name is required." }, { status: 400 });
     }
+    const result = await saveOpportunity(body);
+    return NextResponse.json(result);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
 
-    const hasDb = await isDatabaseConnected();
-    if (hasDb && user) {
-      const opp = await prisma.opportunity.create({
-        data: {
-          projectName: validated.data.projectName,
-          slug: validated.data.slug,
-          description: validated.data.description,
-          campaignType: validated.data.campaignType,
-          officialAnnouncementUrl: validated.data.officialAnnouncementUrl,
-          officialDocumentationUrl: validated.data.officialDocumentationUrl,
-          startsAt: validated.data.startsAt ? new Date(validated.data.startsAt) : null,
-          endsAt: validated.data.endsAt ? new Date(validated.data.endsAt) : null,
-          eligibility: validated.data.eligibility,
-          rewardStatus: validated.data.rewardStatus,
-          campaignStatus: validated.data.campaignStatus,
-          verificationStatus: validated.data.verificationStatus,
-          lastCheckedAt: new Date(),
-        },
-      });
-
-      await createAuditLog("OPPORTUNITY_CREATED", "OPPORTUNITY", opp.id, { slug: opp.slug }, user.id);
-      return NextResponse.json({ success: true, opportunityId: opp.id });
+export async function PUT(req: NextRequest) {
+  try {
+    const body = await req.json();
+    if (!body.id && !body.slug) {
+      return NextResponse.json({ error: "Opportunity ID or slug is required." }, { status: 400 });
     }
+    const result = await saveOpportunity(body);
+    return NextResponse.json(result);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
 
-    return NextResponse.json({ success: true, message: "Opportunity saved in demo mode." });
-  } catch (error: any) {
-    console.error("Admin opportunity error:", error);
-    return NextResponse.json({ error: error.message || "Opportunity save failure." }, { status: 500 });
+export async function DELETE(req: NextRequest) {
+  try {
+    const id = req.nextUrl.searchParams.get("id");
+    const slug = req.nextUrl.searchParams.get("slug");
+    const target = id || slug;
+    if (!target) {
+      return NextResponse.json({ error: "Target ID or slug is required." }, { status: 400 });
+    }
+    const result = await deleteOpportunity(target);
+    return NextResponse.json(result);
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

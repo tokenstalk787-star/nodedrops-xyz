@@ -1609,3 +1609,228 @@ export async function saveToolConfig(
 
   return { success: true };
 }
+
+/**
+ * Save or update a Blockchain Network
+ */
+export async function saveNetwork(data: Partial<NetworkItem>): Promise<{ success: boolean; network: NetworkItem }> {
+  const hasDb = await isDatabaseConnected();
+  const slug = data.slug || data.name?.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || `network-${Date.now()}`;
+  
+  const networkItem: NetworkItem = {
+    id: data.id || `net-${slug}-${Date.now().toString(36)}`,
+    name: data.name || "Unnamed Network",
+    slug,
+    description: data.description || "",
+    networkType: (data.networkType as "MAINNET" | "TESTNET") || "TESTNET",
+    chainId: data.chainId,
+    officialUrl: data.officialUrl || "",
+    documentationUrl: data.documentationUrl || "",
+    nodeTypes: data.nodeTypes || "Full Node, Validator",
+    hardwareRequirements: data.hardwareRequirements || {
+      min: { cpuCores: 4, ramGb: 8, ssdGb: 250, bandwidthMbps: 50 },
+      recommended: { cpuCores: 8, ramGb: 16, ssdGb: 500, bandwidthMbps: 100 },
+      notes: "Configured via Admin Control Center",
+    },
+    status: (data.status as "ACTIVE" | "UPCOMING" | "DEPRECATED") || "ACTIVE",
+    lastVerifiedAt: new Date().toISOString(),
+  };
+
+  if (hasDb) {
+    try {
+      await prisma.network.upsert({
+        where: { slug: networkItem.slug },
+        update: {
+          name: networkItem.name,
+          description: networkItem.description,
+          networkType: networkItem.networkType,
+          chainId: networkItem.chainId || null,
+          officialUrl: networkItem.officialUrl,
+          documentationUrl: networkItem.documentationUrl,
+          nodeTypes: networkItem.nodeTypes,
+          hardwareRequirements: JSON.stringify(networkItem.hardwareRequirements),
+          status: networkItem.status,
+          lastVerifiedAt: new Date(),
+        },
+        create: {
+          name: networkItem.name,
+          slug: networkItem.slug,
+          description: networkItem.description,
+          networkType: networkItem.networkType,
+          chainId: networkItem.chainId || null,
+          officialUrl: networkItem.officialUrl,
+          documentationUrl: networkItem.documentationUrl,
+          nodeTypes: networkItem.nodeTypes,
+          hardwareRequirements: JSON.stringify(networkItem.hardwareRequirements),
+          status: networkItem.status,
+          lastVerifiedAt: new Date(),
+        },
+      });
+    } catch (e) {
+      console.warn("DB saveNetwork error:", e);
+    }
+  }
+
+  // Update in-memory seed list
+  const idx = SEED_NETWORKS.findIndex((n) => n.slug === networkItem.slug || n.id === networkItem.id);
+  if (idx >= 0) {
+    SEED_NETWORKS[idx] = networkItem;
+  } else {
+    SEED_NETWORKS.unshift(networkItem);
+  }
+
+  return { success: true, network: networkItem };
+}
+
+/**
+ * Delete a Blockchain Network
+ */
+export async function deleteNetwork(idOrSlug: string): Promise<{ success: boolean; error?: string }> {
+  const hasDb = await isDatabaseConnected();
+  if (hasDb) {
+    try {
+      await prisma.network.deleteMany({
+        where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
+      });
+    } catch (e: any) {
+      console.warn("DB deleteNetwork error:", e);
+    }
+  }
+
+  const idx = SEED_NETWORKS.findIndex((n) => n.id === idOrSlug || n.slug === idOrSlug);
+  if (idx >= 0) {
+    SEED_NETWORKS.splice(idx, 1);
+  }
+
+  return { success: true };
+}
+
+/**
+ * Save or update a Command Template
+ */
+export async function saveCommandTemplate(data: Partial<CommandTemplateItem>): Promise<{ success: boolean; template: CommandTemplateItem }> {
+  const slug = data.slug || data.name?.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || `cmd-${Date.now()}`;
+  const template: CommandTemplateItem = {
+    id: data.id || `cmd-${Date.now().toString(36)}`,
+    name: data.name || "Custom Command Template",
+    slug,
+    networkSlug: data.networkSlug || "general",
+    client: data.client || "Linux",
+    operatingSystem: data.operatingSystem || "Ubuntu 22.04 LTS / 24.04 LTS",
+    installationMethod: (data.installationMethod as "Docker" | "Systemd" | "Binary") || "Systemd",
+    version: data.version || "1.0.0",
+    templateContent: data.templateContent || "#!/usr/bin/env bash\necho 'Executing node setup...'",
+    validationNotes: data.validationNotes || "Verified template",
+    riskLevel: (data.riskLevel as "SAFE" | "CAUTION" | "DESTRUCTIVE") || "SAFE",
+    lastVerifiedAt: new Date().toISOString(),
+  };
+
+  const idx = SEED_COMMAND_TEMPLATES.findIndex((t) => t.id === template.id || t.slug === template.slug);
+  if (idx >= 0) {
+    SEED_COMMAND_TEMPLATES[idx] = template;
+  } else {
+    SEED_COMMAND_TEMPLATES.unshift(template);
+  }
+
+  return { success: true, template };
+}
+
+/**
+ * Delete a Command Template
+ */
+export async function deleteCommandTemplate(idOrSlug: string): Promise<{ success: boolean }> {
+  const idx = SEED_COMMAND_TEMPLATES.findIndex((t) => t.id === idOrSlug || t.slug === idOrSlug);
+  if (idx >= 0) {
+    SEED_COMMAND_TEMPLATES.splice(idx, 1);
+  }
+  return { success: true };
+}
+
+/**
+ * Save or update a Troubleshooting item
+ */
+export async function saveTroubleshooting(data: Partial<TroubleshootingItem>): Promise<{ success: boolean; item: TroubleshootingItem }> {
+  const slug = data.slug || data.title?.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || `trouble-${Date.now()}`;
+  const item: TroubleshootingItem = {
+    id: data.id || `trouble-${Date.now().toString(36)}`,
+    title: data.title || "Untitled Solution",
+    slug,
+    symptoms: data.symptoms || "Node instability or error message",
+    likelyCauses: data.likelyCauses || "Configuration or network firewall issue",
+    diagnosticCommands: data.diagnosticCommands || "journalctl -u node -n 100 --no-pager",
+    correctiveSteps: data.correctiveSteps || "1. Inspect logs\n2. Restart service cleanly",
+    riskWarnings: data.riskWarnings || "Do not delete state directories while node process is running.",
+    verificationInstructions: data.verificationInstructions || "Confirm peer count > 0 and block height advancing.",
+    tags: Array.isArray(data.tags) ? data.tags : ["General", "Troubleshooting"],
+  };
+
+  const idx = SEED_TROUBLESHOOTING.findIndex((t) => t.id === item.id || t.slug === item.slug);
+  if (idx >= 0) {
+    SEED_TROUBLESHOOTING[idx] = item;
+  } else {
+    SEED_TROUBLESHOOTING.unshift(item);
+  }
+
+  return { success: true, item };
+}
+
+/**
+ * Delete a Troubleshooting item
+ */
+export async function deleteTroubleshooting(idOrSlug: string): Promise<{ success: boolean }> {
+  const idx = SEED_TROUBLESHOOTING.findIndex((t) => t.id === idOrSlug || t.slug === idOrSlug);
+  if (idx >= 0) {
+    SEED_TROUBLESHOOTING.splice(idx, 1);
+  }
+  return { success: true };
+}
+
+/**
+ * Save or update an Opportunity
+ */
+export async function saveOpportunity(data: Partial<OpportunityItem>): Promise<{ success: boolean; opportunity: OpportunityItem }> {
+  const slug = data.slug || data.projectName?.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || `opp-${Date.now()}`;
+  const opp: OpportunityItem = {
+    id: data.id || `opp-${Date.now().toString(36)}`,
+    projectName: data.projectName || "New Node Opportunity",
+    slug,
+    description: data.description || "Node operator campaign",
+    campaignType: data.campaignType || "Incentivized Testnet",
+    networkSlug: data.networkSlug,
+    officialAnnouncementUrl: data.officialAnnouncementUrl || "https://nodedrops.xyz",
+    officialDocumentationUrl: data.officialDocumentationUrl || "https://nodedrops.xyz",
+    startsAt: data.startsAt || new Date().toISOString(),
+    endsAt: data.endsAt,
+    eligibility: data.eligibility || "Open to community node operators",
+    rewardStatus: (data.rewardStatus as any) || "POTENTIAL",
+    campaignStatus: (data.campaignStatus as any) || "ACTIVE",
+    verificationStatus: (data.verificationStatus as any) || "VERIFIED",
+    lastCheckedAt: new Date().toISOString(),
+    ticker: data.ticker,
+    nodeType: data.nodeType,
+    vpsCost: data.vpsCost,
+    stage: data.stage,
+    guideSlug: data.guideSlug,
+    tasksCount: data.tasksCount,
+  };
+
+  const idx = SEED_OPPORTUNITIES.findIndex((o) => o.id === opp.id || o.slug === opp.slug);
+  if (idx >= 0) {
+    SEED_OPPORTUNITIES[idx] = opp;
+  } else {
+    SEED_OPPORTUNITIES.unshift(opp);
+  }
+
+  return { success: true, opportunity: opp };
+}
+
+/**
+ * Delete an Opportunity
+ */
+export async function deleteOpportunity(idOrSlug: string): Promise<{ success: boolean }> {
+  const idx = SEED_OPPORTUNITIES.findIndex((o) => o.id === idOrSlug || o.slug === idOrSlug);
+  if (idx >= 0) {
+    SEED_OPPORTUNITIES.splice(idx, 1);
+  }
+  return { success: true };
+}
