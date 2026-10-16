@@ -182,11 +182,20 @@ export default function AdminFooterPage() {
         <div className="rounded-xl border border-dark-card-border bg-dark-bg p-6 space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
             <div className="col-span-2 space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-md bg-gradient-to-tr from-brand-purple to-brand-blue flex items-center justify-center text-white font-black text-xs">
-                  N
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 shrink-0">
+                  <img
+                    src="/brand/logo-icon.png"
+                    alt="NodeDrops"
+                    className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(139,92,246,0.6)]"
+                  />
                 </div>
-                <span className="font-bold text-text-primary text-sm">NodeDrops.xyz</span>
+                <div className="flex items-center text-sm font-black tracking-tight leading-none">
+                  <span className="text-white">NODE</span>
+                  <span className="bg-gradient-to-r from-[#22d3ee] via-[#818cf8] to-[#c084fc] bg-clip-text text-transparent">
+                    DROPS
+                  </span>
+                </div>
               </div>
               <p className="text-xs text-text-muted leading-relaxed max-w-xs">{tagline}</p>
             </div>

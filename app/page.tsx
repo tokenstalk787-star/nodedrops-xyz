@@ -19,6 +19,7 @@ import {
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
+import { Logo } from "../components/ui/logo";
 import { getNetworks, getGuides, getOpportunities } from "../lib/services/data-service";
 
 export const revalidate = 3600; // Static revalidation every hour for public home
@@ -33,9 +34,14 @@ export default async function HomePage() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* 1. HERO SECTION */}
-      <section className="relative pt-20 pb-16 overflow-hidden border-b border-border/80 bg-radial-glow">
+      <section className="relative pt-16 pb-16 overflow-hidden border-b border-border/80 bg-radial-glow">
         <div className="container mx-auto px-4 max-w-6xl">
           <div className="flex flex-col items-center text-center space-y-6">
+            {/* Official Brand Logo Lockup */}
+            <div className="flex justify-center mb-2">
+              <Logo size="xl" href="/" />
+            </div>
+
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-brand-purple/40 bg-brand-purple/10 text-brand-purple-light text-xs font-mono">
               <Sparkles className="w-3.5 h-3.5 text-brand-cyan" />
               <span>PRODUCTION-READY WEB3 INFRASTRUCTURE PLATFORM</span>

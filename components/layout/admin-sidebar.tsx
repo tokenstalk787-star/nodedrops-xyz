@@ -83,15 +83,26 @@ export function AdminSidebar() {
       }`}
     >
       {/* Brand Header */}
-      <div className="p-4 border-b border-border/80 flex items-center justify-between">
-        <Link href="/admin" className="flex items-center gap-2.5 overflow-hidden">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-purple to-brand-blue flex items-center justify-center shrink-0 shadow-glow-purple">
-            <Cpu className="w-4 h-4 text-white" />
+      <div className="p-3.5 border-b border-border/80 flex items-center justify-between">
+        <Link href="/admin" className="flex items-center gap-2.5 overflow-hidden group">
+          <div className="w-8 h-8 shrink-0 flex items-center justify-center">
+            <img
+              src="/brand/logo-icon.png"
+              alt="NodeDrops"
+              className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(139,92,246,0.6)] group-hover:scale-105 transition-transform"
+            />
           </div>
           {!collapsed && (
-            <div className="flex flex-col truncate">
-              <span className="font-bold text-white tracking-tight">NodeDrops</span>
-              <span className="text-[10px] text-brand-cyan font-mono tracking-wider">CONTROL CENTER</span>
+            <div className="flex flex-col truncate justify-center">
+              <div className="flex items-center text-sm font-black tracking-tight leading-none">
+                <span className="text-white">NODE</span>
+                <span className="bg-gradient-to-r from-[#22d3ee] via-[#818cf8] to-[#c084fc] bg-clip-text text-transparent">
+                  DROPS
+                </span>
+              </div>
+              <span className="text-[9px] text-brand-cyan font-mono tracking-widest mt-0.5">
+                CONTROL CENTER
+              </span>
             </div>
           )}
         </Link>

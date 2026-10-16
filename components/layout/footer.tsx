@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Cpu, ShieldCheck, Terminal, Heart } from "lucide-react";
+import { Logo } from "../ui/logo";
 
 export function Footer() {
   return (
@@ -8,14 +9,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           {/* Brand description */}
           <div className="md:col-span-2 space-y-4">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-purple to-brand-blue flex items-center justify-center">
-                <Cpu className="w-4 h-4 text-white" />
-              </div>
-              <span className="font-bold text-lg text-white">
-                NodeDrops<span className="text-brand-cyan">.xyz</span>
-              </span>
-            </Link>
+            <Logo size="lg" href="/" />
             <p className="text-xs text-text-muted leading-relaxed max-w-sm">
               Run Nodes. Learn Web3. Explore Opportunities. A community-first, production-oriented
               blockchain node education, discovery, and infrastructure tooling platform.

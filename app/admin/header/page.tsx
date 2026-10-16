@@ -215,13 +215,25 @@ export default function AdminHeaderPage() {
 
           {/* Nav bar */}
           <div className="px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-brand-purple to-brand-blue flex items-center justify-center text-white font-black text-xs">
-                N
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 shrink-0">
+                <img
+                  src="/brand/logo-icon.png"
+                  alt="NodeDrops"
+                  className="w-full h-full object-contain filter drop-shadow-[0_0_8px_rgba(139,92,246,0.6)]"
+                />
               </div>
-              <span className="font-bold text-text-primary text-base tracking-tight">
-                {logoText}
-              </span>
+              <div className="flex flex-col justify-center">
+                <div className="flex items-center text-sm font-black tracking-tight leading-none">
+                  <span className="text-white">NODE</span>
+                  <span className="bg-gradient-to-r from-[#22d3ee] via-[#818cf8] to-[#c084fc] bg-clip-text text-transparent">
+                    DROPS
+                  </span>
+                </div>
+                <span className="text-[8px] text-text-muted font-mono tracking-widest uppercase mt-0.5">
+                  INCENTIVES NODES GUIDE
+                </span>
+              </div>
             </div>
 
             <div className="hidden md:flex items-center gap-6">

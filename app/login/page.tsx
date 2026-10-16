@@ -7,6 +7,7 @@ import { Lock, LogIn, AlertCircle, ShieldCheck, Cpu } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Logo } from "@/components/ui/logo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -44,11 +45,11 @@ export default function LoginPage() {
 
   return (
     <div className="container mx-auto px-4 py-16 max-w-md flex flex-col justify-center min-h-[75vh]">
-      <div className="text-center space-y-3 mb-8">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-purple to-brand-blue flex items-center justify-center mx-auto shadow-glow-purple">
-          <Lock className="w-6 h-6 text-white" />
+      <div className="text-center space-y-4 mb-8">
+        <div className="flex justify-center mb-1">
+          <Logo size="lg" href="/" />
         </div>
-        <h1 className="text-2xl font-bold text-white tracking-tight">Operator Authentication</h1>
+        <h1 className="text-xl font-bold text-white tracking-tight">Operator Authentication</h1>
         <p className="text-xs text-text-secondary leading-relaxed max-w-xs mx-auto">
           Sign in with your verified editor or administrator credentials.
         </p>

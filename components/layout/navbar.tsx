@@ -16,6 +16,7 @@ import {
   LogIn,
   GraduationCap,
 } from "lucide-react";
+import { Logo } from "../ui/logo";
 import { Button } from "../ui/button";
 
 export function Navbar() {
@@ -38,20 +39,8 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/80 bg-background/90 backdrop-blur-md">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
-        {/* Brand Wordmark */}
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-brand-purple to-brand-blue flex items-center justify-center shadow-glow-purple group-hover:scale-105 transition-transform">
-            <Cpu className="w-5 h-5 text-white" />
-          </div>
-          <div className="flex flex-col">
-            <span className="font-bold text-lg tracking-tight text-white flex items-center gap-1">
-              NodeDrops<span className="text-brand-cyan">.xyz</span>
-            </span>
-            <span className="text-[10px] text-text-muted font-mono tracking-wider -mt-1 hidden sm:block">
-              RUN NODES • WEB3 INFRA
-            </span>
-          </div>
-        </Link>
+        {/* Brand Logo: Design Mark on left, Name in front */}
+        <Logo size="md" href="/" />
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
