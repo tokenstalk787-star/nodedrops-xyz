@@ -1,0 +1,510 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  EDITOR
+  USER
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+enum NetworkType {
+  MAINNET
+  TESTNET
+}
+
+enum NetworkStatus {
+  ACTIVE
+  UPCOMING
+  DEPRECATED
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum Difficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum RiskLevel {
+  SAFE
+  CAUTION
+  DESTRUCTIVE
+}
+
+enum RewardStatus {
+  CONFIRMED
+  POTENTIAL
+  NONE
+  UNKNOWN
+}
+
+enum CampaignStatus {
+  UPCOMING
+  ACTIVE
+  ENDED
+  PAUSED
+  UNVERIFIED
+}
+
+enum VerificationStatus {
+  VERIFIED
+  RESEARCH_ONLY
+  UNVERIFIED
+}
+
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  name         String?
+  passwordHash String
+  role         Role        @default(USER)
+  status       UserStatus  @default(ACTIVE)
+  permissions  String?     @db.Text // JSON object storing granular permissions
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  sessions     Session[]
+  authoredGuides Guide[]   @relation("AuthoredGuides")
+  reviewedGuides Guide[]   @relation("ReviewedGuides")
+  auditLogs    AuditLog[]
+  bookmarks    Bookmark[]
+  guideVersions GuideVersion[]
+  opportunityHistory OpportunityHistory[]
+  commandTemplatesReviewed CommandTemplate[]
+  pageRevisions PageRevision[]
+  mediaAssets  MediaAsset[]
+
+  @@index([role])
+  @@index([status])
+}
+
+model Session {
+  id               String   @id @default(cuid())
+  sessionTokenHash String   @unique
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt        DateTime
+  createdAt        DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model CustomPage {
+  id              String        @id @default(cuid())
+  title           String
+  slug            String        @unique
+  pageType        String        @default("CUSTOM") // HOME, NETWORKS, GUIDES, TOOLS, CUSTOM
+  status          ContentStatus @default(DRAFT)
+  draftConfig     String        @db.LongText // JSON array of PageSection configurations
+  publishedConfig String?       @db.LongText // JSON array of published PageSections
+  seoTitle        String?
+  seoDescription  String?       @db.Text
+  canonicalUrl    String?
+  ogImage         String?
+  noIndex         Boolean       @default(false)
+  noFollow        Boolean       @default(false)
+  noSnippet       Boolean       @default(false)
+  noArchive       Boolean       @default(false)
+  customHeadCode  String?       @db.Text
+  customBodyCode  String?       @db.Text
+  publishedAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  sections        PageSection[]
+  revisions       PageRevision[]
+
+  @@index([slug])
+  @@index([status])
+}
+
+model PageSection {
+  id            String      @id @default(cuid())
+  pageId        String
+  page          CustomPage  @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  componentType String      // HERO, RICH_TEXT, STATS, FEATURES, NETWORK_GRID, GUIDE_GRID, OPPORTUNITY_GRID, FAQ, CTA, DIVIDER
+  orderIndex    Int
+  config        String      @db.LongText // JSON validated schema properties
+  isVisible     Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([pageId, orderIndex])
+}
+
+model PageRevision {
+  id            String      @id @default(cuid())
+  pageId        String
+  page          CustomPage  @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  versionNumber Int
+  snapshot      String      @db.LongText // JSON serialized page configuration snapshot
+  changedById   String
+  changedBy     User        @relation(fields: [changedById], references: [id])
+  changeSummary String?     @db.Text
+  createdAt     DateTime    @default(now())
+
+  @@index([pageId, versionNumber])
+}
+
+model NavigationMenu {
+  id          String           @id @default(cuid())
+  location    String           @unique // HEADER, FOOTER
+  title       String
+  logoUrl     String?
+  logoText    String?
+  showAnnouncement Boolean     @default(false)
+  announcementText String?
+  announcementLink String?
+  items       NavigationItem[]
+  updatedAt   DateTime         @updatedAt
+}
+
+model NavigationItem {
+  id          String         @id @default(cuid())
+  menuId      String
+  menu        NavigationMenu @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  label       String
+  link        String
+  orderIndex  Int
+  isEnabled   Boolean        @default(true)
+  isExternal  Boolean        @default(false)
+  columnName  String?        // for footer column groupings
+  createdAt   DateTime       @default(now())
+
+  @@index([menuId, orderIndex])
+}
+
+model ThemeConfig {
+  id              String   @id @default("global-theme")
+  presetName      String   @default("Violet Bloom")
+  primaryColor    String   @default("#8B5CF6")
+  secondaryColor  String   @default("#101525")
+  cardBackground  String   @default("#141B2D")
+  accentCyan      String   @default("#06B6D4")
+  accentBlue      String   @default("#3B82F6")
+  fontFamily      String   @default("Inter, system-ui, sans-serif")
+  borderRadius    String   @default("0.75rem")
+  updatedAt       DateTime @updatedAt
+}
+
+model MediaAsset {
+  id          String   @id @default(cuid())
+  filename    String
+  url         String
+  fileType    String   // image/png, image/jpeg, image/svg+xml, video/mp4
+  fileSizeKb  Int      @default(0)
+  dimensions  String?  // e.g. "1920x1080"
+  altText     String?
+  category    String   @default("image") // image, video, document, logo
+  uploadedById String?
+  uploadedBy  User?    @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+
+  @@index([fileType])
+  @@index([category])
+}
+
+model ToolConfig {
+  id          String   @id @default(cuid())
+  toolType    String   @unique // HARDWARE_CHECKER, COMMAND_BUILDER, TROUBLESHOOTING
+  title       String
+  description String   @db.Text
+  rulesConfig String   @db.LongText // JSON configuration
+  version     String   @default("1.0.0")
+  status      ContentStatus @default(PUBLISHED)
+  updatedAt   DateTime @updatedAt
+}
+
+model RedirectRule {
+  id          String   @id @default(cuid())
+  sourcePath  String   @unique
+  targetPath  String
+  statusCode  Int      @default(301)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@index([sourcePath])
+}
+
+model Network {
+  id                   String        @id @default(cuid())
+  name                 String
+  slug                 String        @unique
+  description          String        @db.Text
+  networkType          NetworkType   @default(TESTNET)
+  chainId              String?
+  officialUrl          String
+  documentationUrl     String
+  nodeTypes            String        // JSON array or comma separated: Full Node, Validator, RPC
+  hardwareRequirements String        @db.Text // JSON with min/recommended cpu, ramGb, ssdGb, bandwidthMbps
+  status               NetworkStatus @default(ACTIVE)
+  lastVerifiedAt       DateTime?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  guides               NetworkGuide[]
+  opportunities        Opportunity[]
+  commandTemplates     CommandTemplate[]
+
+  @@index([networkType])
+  @@index([status])
+}
+
+model Guide {
+  id               String        @id @default(cuid())
+  title            String
+  slug             String        @unique
+  excerpt          String        @db.Text
+  content          String        @db.LongText
+  status           ContentStatus @default(DRAFT)
+  difficulty       Difficulty    @default(BEGINNER)
+  estimatedMinutes Int           @default(30)
+  seoTitle         String?
+  seoDescription   String?       @db.Text
+  canonicalUrl     String?
+  authorId         String
+  author           User          @relation("AuthoredGuides", fields: [authorId], references: [id])
+  reviewerId       String?
+  reviewer         User?         @relation("ReviewedGuides", fields: [reviewerId], references: [id])
+  publishedAt      DateTime?
+  lastVerifiedAt   DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  steps            GuideStep[]
+  versions         GuideVersion[]
+  networks         NetworkGuide[]
+  tags             GuideTag[]
+  feedback         GuideFeedback[]
+  bookmarks        Bookmark[]
+  categoryId       String?
+  category         Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([difficulty])
+  @@index([publishedAt])
+  @@index([categoryId])
+}
+
+model GuideStep {
+  id                       String   @id @default(cuid())
+  guideId                  String
+  guide                    Guide    @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  orderIndex               Int
+  title                    String
+  explanation              String   @db.Text
+  command                  String?  @db.Text
+  expectedOutput           String?  @db.Text
+  warning                  String?  @db.Text
+  verificationInstructions String?  @db.Text
+
+  @@index([guideId, orderIndex])
+}
+
+model GuideVersion {
+  id              String   @id @default(cuid())
+  guideId         String
+  guide           Guide    @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  versionNumber   Int
+  contentSnapshot String   @db.LongText
+  changedById     String
+  changedBy       User     @relation(fields: [changedById], references: [id])
+  changeSummary   String?  @db.Text
+  createdAt       DateTime @default(now())
+
+  @@index([guideId])
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?  @db.Text
+  createdAt   DateTime @default(now())
+  guides      Guide[]
+}
+
+model Tag {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  slug      String     @unique
+  guides    GuideTag[]
+}
+
+model GuideTag {
+  guideId String
+  tagId   String
+  guide   Guide  @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  tag     Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([guideId, tagId])
+  @@index([tagId])
+}
+
+model NetworkGuide {
+  networkId String
+  guideId   String
+  network   Network @relation(fields: [networkId], references: [id], onDelete: Cascade)
+  guide     Guide   @relation(fields: [guideId], references: [id], onDelete: Cascade)
+
+  @@id([networkId, guideId])
+  @@index([guideId])
+}
+
+model CommandTemplate {
+  id                 String        @id @default(cuid())
+  name               String
+  slug               String        @unique
+  networkId          String
+  network            Network       @relation(fields: [networkId], references: [id], onDelete: Cascade)
+  client             String
+  operatingSystem    String        // Ubuntu 22.04, Debian 12, etc.
+  installationMethod String        // Docker, Systemd, Binary
+  version            String        // Template version e.g. 1.0.0
+  templateContent    String        @db.Text
+  validationNotes    String?       @db.Text
+  riskLevel          RiskLevel     @default(SAFE)
+  status             ContentStatus @default(PUBLISHED)
+  reviewedById       String?
+  reviewedBy         User?         @relation(fields: [reviewedById], references: [id])
+  lastVerifiedAt     DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([networkId])
+  @@index([status])
+}
+
+model TroubleshootingSolution {
+  id                       String   @id @default(cuid())
+  slug                     String   @unique
+  title                    String
+  symptoms                 String   @db.Text
+  likelyCauses             String   @db.Text
+  diagnosticCommands       String   @db.Text
+  correctiveSteps          String   @db.Text
+  riskWarnings             String?  @db.Text
+  verificationInstructions String   @db.Text
+  sourceReferences         String?  @db.Text
+  tags                     String?  // comma-separated tags
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  @@index([slug])
+}
+
+model Opportunity {
+  id                       String             @id @default(cuid())
+  projectName              String
+  slug                     String             @unique
+  description              String             @db.Text
+  campaignType             String             // Incentivized Testnet, Validator Program, Community Node
+  networkId                String?
+  network                  Network?           @relation(fields: [networkId], references: [id], onDelete: SetNull)
+  officialAnnouncementUrl  String
+  officialDocumentationUrl String
+  startsAt                 DateTime?
+  endsAt                   DateTime?
+  eligibility              String             @db.Text
+  rewardStatus             RewardStatus       @default(UNKNOWN)
+  campaignStatus           CampaignStatus     @default(UNVERIFIED)
+  verificationStatus       VerificationStatus @default(UNVERIFIED)
+  lastCheckedAt            DateTime?
+  publishedAt              DateTime?
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
+
+  history                  OpportunityHistory[]
+
+  @@index([campaignStatus])
+  @@index([rewardStatus])
+  @@index([endsAt])
+}
+
+model OpportunityHistory {
+  id              String         @id @default(cuid())
+  opportunityId   String
+  opportunity     Opportunity    @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  previousStatus  CampaignStatus
+  newStatus       CampaignStatus
+  changedById     String?
+  changedBy       User?          @relation(fields: [changedById], references: [id])
+  sourceReference String?        @db.Text
+  createdAt       DateTime       @default(now())
+
+  @@index([opportunityId])
+}
+
+model GuideFeedback {
+  id        String   @id @default(cuid())
+  guideId   String
+  guide     Guide    @relation(fields: [guideId], references: [id], onDelete: Cascade)
+  helpful   Boolean
+  message   String?  @db.Text
+  status    String   @default("APPROVED")
+  createdAt DateTime @default(now())
+
+  @@index([guideId])
+}
+
+model Bookmark {
+  userId    String
+  guideId   String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guide     Guide    @relation(fields: [guideId], references: [id], onDelete: Cascade)
+
+  @@id([userId, guideId])
+  @@index([guideId])
+}
+
+model SiteSetting {
+  key         String   @id
+  value       String   @db.Text
+  updatedAt   DateTime @updatedAt
+  updatedById String?
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action     String
+  targetType String
+  targetId   String?
+  metadata   String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  @@index([actorId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model ContactSubmission {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String   @db.Text
+  status    String   @default("UNREAD")
+  createdAt DateTime @default(now())
+
+  @@index([status])
+}
