@@ -212,106 +212,36 @@
       "updatedAt": "2026-04-12T10:00:00Z",
       "sections": [
         {
-          "id": "sec-hero",
-          "componentType": "HERO",
+          "id": "sec-node-dashboard",
+          "componentType": "NODE_DASHBOARD",
           "orderIndex": 0,
           "isVisible": true,
           "config": {
-            "badge": "PRODUCTION-READY WEB3 INFRASTRUCTURE PLATFORM",
-            "heading": "Run Nodes. Learn Web3.",
-            "highlightText": "Explore Opportunities.",
-            "description": "Technical, verified node documentation, interactive hardware validation, and command builders designed for validators, infrastructure engineers, and beginners.",
-            "primaryCtaLabel": "Browse Node Guides",
-            "primaryCtaHref": "/guides",
-            "secondaryCtaLabel": "Check Node Hardware",
-            "secondaryCtaHref": "/tools/hardware-checker",
-            "showSearch": true
-          }
-        },
-        {
-          "id": "sec-features",
-          "componentType": "FEATURES",
-          "orderIndex": 1,
-          "isVisible": true,
-          "config": {
-            "title": "Tailored Infrastructure Pathways",
-            "subtitle": "Whether you are spinning up your very first testnet node or managing multi-region validator clusters.",
-            "cards": [
-              {
-                "title": "Beginner Node Operator Path",
-                "description": "Start from scratch. Learn Linux server leasing, SSH key pair creation, firewall rules (UFW), Docker deployment, and lightweight node participation.",
-                "badge": "Beginner Friendly",
-                "href": "/learn",
-                "iconName": "Zap"
-              },
-              {
-                "title": "Validator & DevOps Engineer Path",
-                "description": "Production architecture, consensus & execution pairing, state pruning, anti-slashing safeguards, Prometheus/Grafana monitoring, and systemd automation.",
-                "badge": "Advanced Operators",
-                "href": "/guides",
-                "iconName": "Server"
-              }
-            ]
-          }
-        },
-        {
-          "id": "sec-guides",
-          "componentType": "GUIDE_GRID",
-          "orderIndex": 2,
-          "isVisible": true,
-          "config": {
-            "title": "Featured Node Guides",
-            "subtitle": "Field-tested setup walkthroughs with copyable commands and expected terminal outputs.",
-            "itemLimit": 4,
-            "viewAllLink": "/guides"
-          }
-        },
-        {
-          "id": "sec-networks",
-          "componentType": "NETWORK_GRID",
-          "orderIndex": 3,
-          "isVisible": true,
-          "config": {
-            "title": "Popular Blockchain Networks",
-            "subtitle": "Hardware profiles, consensus architectures, and client compatibility.",
-            "itemLimit": 4,
-            "viewAllLink": "/networks"
-          }
-        },
-        {
-          "id": "sec-opps",
-          "componentType": "OPPORTUNITY_GRID",
-          "orderIndex": 4,
-          "isVisible": true,
-          "config": {
-            "title": "Active Node Opportunities",
-            "subtitle": "Verified campaigns with factual reward statuses. We never invent rewards or promise airdrops.",
-            "itemLimit": 3,
-            "viewAllLink": "/opportunities"
+            "title": "",
+            "subtitle": ""
           }
         },
         {
           "id": "sec-faq",
           "componentType": "FAQ",
-          "orderIndex": 5,
+          "orderIndex": 1,
           "isVisible": true,
           "config": {
-            "title": "Node Operator FAQ",
-            "subtitle": "Common questions regarding hardware costs, testnets, and security standards.",
-            "items": [
-              {
-                "question": "Do I need to connect my Web3 wallet to read guides?",
-                "answer": "No. NodeDrops is an educational platform and strictly enforces a zero-wallet policy for browsing documentation and using tools."
-              },
-              {
-                "question": "Are airdrops guaranteed for testnet node runners?",
-                "answer": "No. Testnet campaigns are independent and subject to project foundations. We label reward statuses transparently as Confirmed, Potential, None, or Unknown."
-              },
-              {
-                "question": "Can I run multiple blockchain nodes on one VPS?",
-                "answer": "It depends on storage IOPS and RAM. CPU and NVMe disk throughput are typically the primary bottlenecks when pairing execution and consensus daemons."
-              }
-            ]
+            "title": "FAQ",
+            "subtitle": "Frequently asked questions regarding incentivized testnets, token airdrops, and node operations."
+          }
+        },
+        {
+          "id": "sec-security",
+          "componentType": "SECURITY_BANNER",
+          "orderIndex": 2,
+          "isVisible": true,
+          "config": {
+            "badge": "ZERO-WALLET GUARANTEE",
+            "title": "NodeDrops.xyz Operator Security Protocol",
+            "description": "Never share your mnemonic seed phrase or private keys. NodeDrops.xyz will never request your wallet connection merely to view opportunities, benchmark hardware, or read runbooks.",
+            "linkLabel": "Read complete Security & Slashing Prevention Protocol",
+            "linkHref": "/security"
           }
         }
       ]
@@ -824,29 +754,27 @@
   ],
   "opportunities": [
     {
-      "id": "opp-linea-zk",
-      "projectName": "Linea zkEVM Prover & Node",
-      "slug": "linea-zkevm-prover-node",
-      "description": "Consensys zkEVM Layer 2 network. Deploy follower nodes and verify zero-knowledge state transitions.",
-      "campaignType": "zkEVM Node Operator",
-      "networkSlug": "linea",
-      "officialAnnouncementUrl": "https://linea.build",
-      "officialDocumentationUrl": "https://docs.linea.build",
-      "startsAt": "2026-01-01T00:00:00Z",
-      "endsAt": "2026-12-31T23:59:59Z",
-      "eligibility": "Open to operators running Geth-based Linea clients with RPC synchronization.",
+      "id": "opp-linea-zkevm",
+      "projectName": "Linea zkEVM Prover & RPC Node",
+      "slug": "linea-zkevm",
+      "networkSlug": "ethereum-sepolia",
+      "campaignType": "Type-2 zkEVM Operator",
       "rewardStatus": "CONFIRMED",
-      "campaignStatus": "ACTIVE",
-      "verificationStatus": "VERIFIED",
-      "lastCheckedAt": "2026-04-15T12:00:00Z",
-      "ticker": "LINEA",
-      "nodeType": "Full Node / RPC",
-      "vpsCost": "~$25 - $45/mo",
-      "stage": "Mainnet Alpha",
-      "guideSlug": "setting-up-celestia-light-node-mocha",
-      "tasksCount": 4,
+      "stage": "Alpha Testnet",
+      "estimatedTimeCommitment": "2-4 hrs/wk",
+      "nodeType": "RPC & Prover",
+      "vpsCost": "~ - /mo",
       "fundingRaised": "$725M",
-      "tasks": ["Node Run", "Incentivized", "Snapshot Q2", "Testnet Faucet"]
+      "tasks": [
+        "RPC Setup",
+        "Proof Verification",
+        "Voyage XP"
+      ],
+      "guideSlug": "setting-up-celestia-light-node-mocha",
+      "isBookmarked": false,
+      "isActive": true,
+      "createdAt": "2026-10-17T03:27:22.533Z",
+      "updatedAt": "2026-10-17T03:27:22.549Z"
     },
     {
       "id": "opp-celestia-mocha",
@@ -871,7 +799,11 @@
       "guideSlug": "setting-up-celestia-light-node-mocha",
       "tasksCount": 3,
       "fundingRaised": "$155M",
-      "tasks": ["Light Node", "DAS Sampling", "Mocha-4", "Telemetry"]
+      "tasks": [
+        "Light Node (DAS)",
+        "Mocha-4 Testnet",
+        "Incentivized"
+      ]
     },
     {
       "id": "opp-berachain-bartio",
@@ -895,8 +827,12 @@
       "stage": "bArtio V2 Testnet",
       "guideSlug": "berachain-bartio-testnet-full-node-guide",
       "tasksCount": 4,
-      "fundingRaised": "$142M",
-      "tasks": ["Validator Run", "bArtio V2", "Telemetry Node", "Proof of Liquidity"]
+      "fundingRaised": "$111M",
+      "tasks": [
+        "Validator Node",
+        "Polaris EVM",
+        "Proof-of-Liquidity"
+      ]
     },
     {
       "id": "opp-babylon-staking",
@@ -920,8 +856,12 @@
       "stage": "bbn-test-3 Phase 2",
       "guideSlug": "deploying-babylon-bitcoin-staking-testnet-node",
       "tasksCount": 3,
-      "fundingRaised": "$70M",
-      "tasks": ["Signet Finality", "CometBFT", "Testnet Faucet"]
+      "fundingRaised": "$96M",
+      "tasks": [
+        "Finality Provider",
+        "BTC Staking",
+        "Signer Daemon"
+      ]
     },
     {
       "id": "opp-eth-sepolia",
@@ -944,7 +884,13 @@
       "vpsCost": "~$25 - $45/mo",
       "stage": "Sepolia PoS Testnet",
       "guideSlug": "run-ethereum-sepolia-node-geth-lighthouse",
-      "tasksCount": 4
+      "tasksCount": 4,
+      "fundingRaised": "Ecosystem ($1.2B)",
+      "tasks": [
+        "Geth Client",
+        "Lighthouse Consensus",
+        "Public Testnet"
+      ]
     },
     {
       "id": "opp-solana-tds",
@@ -967,7 +913,13 @@
       "vpsCost": "~$120 - $220/mo",
       "stage": "Testnet Incentives",
       "guideSlug": "solana-testnet-validator-deployment-tuning",
-      "tasksCount": 5
+      "tasksCount": 5,
+      "fundingRaised": "$315M",
+      "tasks": [
+        "Solana Validator",
+        "Cluster Uptime",
+        "TDS Rewards"
+      ]
     },
     {
       "id": "opp-eigenlayer-operator",
@@ -989,7 +941,13 @@
       "vpsCost": "~$40 - $70/mo",
       "stage": "Mainnet Staking",
       "guideSlug": "linux-security-hardening-node-operators",
-      "tasksCount": 3
+      "tasksCount": 3,
+      "fundingRaised": "$164M",
+      "tasks": [
+        "AVS Node",
+        "Restaking Operator",
+        "EigenDA"
+      ]
     },
     {
       "id": "opp-monad-early-infra",
@@ -1010,7 +968,13 @@
       "nodeType": "Parallel EVM Node",
       "vpsCost": "~$60 - $90/mo",
       "stage": "Internal Devnet",
-      "tasksCount": 2
+      "tasksCount": 2,
+      "fundingRaised": "$225M",
+      "tasks": [
+        "Monad EVM Node",
+        "10k TPS Sync",
+        "Devnet Alpha"
+      ]
     },
     {
       "id": "opp-movement-porto",
@@ -1031,7 +995,13 @@
       "nodeType": "Follower Node",
       "vpsCost": "~$20 - $35/mo",
       "stage": "Porto Testnet",
-      "tasksCount": 3
+      "tasksCount": 3,
+      "fundingRaised": "$38M",
+      "tasks": [
+        "Porto Testnet",
+        "Move-EVM Node",
+        "Early Validator"
+      ]
     },
     {
       "id": "opp-story-protocol",
@@ -1052,7 +1022,13 @@
       "nodeType": "Story EVM Validator",
       "vpsCost": "~$25 - $40/mo",
       "stage": "Iliad Testnet",
-      "tasksCount": 4
+      "tasksCount": 4,
+      "fundingRaised": "$140M",
+      "tasks": [
+        "Iliad Testnet",
+        "IP Validator",
+        "Proof of Creativity"
+      ]
     },
     {
       "id": "opp-aleo-prover",
@@ -1073,7 +1049,13 @@
       "nodeType": "ZK Prover / snarkOS",
       "vpsCost": "~$50 - $110/mo",
       "stage": "Mainnet Canary",
-      "tasksCount": 3
+      "tasksCount": 3,
+      "fundingRaised": "$298M",
+      "tasks": [
+        "ZK Prover",
+        "GPU Miner",
+        "Mainnet Staking"
+      ]
     },
     {
       "id": "opp-cosmos-gaia",
@@ -1095,7 +1077,13 @@
       "nodeType": "CometBFT Sentry",
       "vpsCost": "~$30 - $55/mo",
       "stage": "cosmoshub-4 Mainnet",
-      "tasksCount": 4
+      "tasksCount": 4,
+      "fundingRaised": "$17M",
+      "tasks": [
+        "Gaia Daemon",
+        "IBC Relayer",
+        "Cosmos Hub V19"
+      ]
     },
     {
       "id": "opp-arbitrum-sepolia",
@@ -1117,7 +1105,13 @@
       "nodeType": "Nitro Sequencer Feed",
       "vpsCost": "~$20 - $35/mo",
       "stage": "Sepolia Testnet",
-      "tasksCount": 3
+      "tasksCount": 3,
+      "fundingRaised": "$143M",
+      "tasks": [
+        "Nitro Rollup Node",
+        "WASM Execution",
+        "Sequencer Feed"
+      ]
     }
   ],
   "commandTemplates": [
@@ -1208,11 +1202,11 @@
   ],
   "telemetry": {
     "viewsByPath": {
-      "/": 39,
-      "/networks": 24,
-      "/guides": 31,
+      "/": 43,
+      "/networks": 25,
+      "/guides": 32,
       "/tools/hardware-checker": 19,
-      "/opportunities": 27,
+      "/opportunities": 28,
       "/admin": 4,
       "/admin/footer": 2,
       "/admin/builder": 4,
@@ -1222,10 +1216,81 @@
       "/admin/seo": 1,
       "/admin/users": 1,
       "/admin/analytics": 1,
-      "/admin/settings": 1
+      "/admin/settings": 1,
+      "/learn": 3
     },
-    "totalViews": 160,
+    "totalViews": 170,
     "events": [
+      {
+        "id": "tel-1792207360832-ligl",
+        "path": "/",
+        "referrer": "",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T03:22:40.832Z"
+      },
+      {
+        "id": "tel-1792207358372-04zk",
+        "path": "/learn",
+        "referrer": "",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T03:22:38.372Z"
+      },
+      {
+        "id": "tel-1792207304028-ypht",
+        "path": "/learn",
+        "referrer": "",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T03:21:44.028Z"
+      },
+      {
+        "id": "tel-1792171047257-47ta",
+        "path": "/learn",
+        "referrer": "",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T17:17:27.257Z"
+      },
+      {
+        "id": "tel-1792171030335-vbeu",
+        "path": "/networks",
+        "referrer": "",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T17:17:10.335Z"
+      },
+      {
+        "id": "tel-1792170997006-q4ra",
+        "path": "/guides",
+        "referrer": "",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T17:16:37.006Z"
+      },
+      {
+        "id": "tel-1792170913305-olxt",
+        "path": "/opportunities",
+        "referrer": "",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T17:15:13.305Z"
+      },
+      {
+        "id": "tel-1792170809378-yd4v",
+        "path": "/",
+        "referrer": "",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T17:13:29.378Z"
+      },
+      {
+        "id": "tel-1792170805980-e81r",
+        "path": "/",
+        "referrer": "",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T17:13:25.980Z"
+      },
+      {
+        "id": "tel-1792170802934-c46b",
+        "path": "/",
+        "referrer": "",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-16T17:13:22.934Z"
+      },
       {
         "id": "tel-1792169815362-pmuf",
         "path": "/",

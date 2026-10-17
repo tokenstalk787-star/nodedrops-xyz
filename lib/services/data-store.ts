@@ -112,22 +112,20 @@ function getDefaultState(): SiteStoreState {
   };
 }
 
-declare global {
-  // eslint-disable-next-line no-var
-  var __nodeDropsStore: SiteStoreState | undefined;
-}
+let lastStoreMtime = 0;
 
 export function getStore(): SiteStoreState {
-  if (globalThis.__nodeDropsStore) {
-    return globalThis.__nodeDropsStore;
-  }
-
   try {
     if (!fs.existsSync(DATA_DIR)) {
       fs.mkdirSync(DATA_DIR, { recursive: true });
     }
 
     if (fs.existsSync(STORE_FILE)) {
+      const stat = fs.statSync(STORE_FILE);
+      if (globalThis.__nodeDropsStore && stat.mtimeMs === lastStoreMtime) {
+        return globalThis.__nodeDropsStore;
+      }
+
       const content = fs.readFileSync(STORE_FILE, "utf-8");
       const parsed = JSON.parse(content);
       const defaults = getDefaultState();
@@ -137,10 +135,15 @@ export function getStore(): SiteStoreState {
         settings: { ...defaults.settings, ...(parsed.settings || {}) },
         telemetry: { ...defaults.telemetry, ...(parsed.telemetry || {}) },
       };
+      lastStoreMtime = stat.mtimeMs;
       return globalThis.__nodeDropsStore!;
     }
   } catch (err) {
     console.warn("Failed to read site-store.json, using defaults:", err);
+  }
+
+  if (globalThis.__nodeDropsStore) {
+    return globalThis.__nodeDropsStore;
   }
 
   const defaultState = getDefaultState();
@@ -159,7 +162,11 @@ export function saveStore(state?: SiteStoreState): void {
       fs.mkdirSync(DATA_DIR, { recursive: true });
     }
     fs.writeFileSync(STORE_FILE, JSON.stringify(target, null, 2), "utf-8");
+    if (fs.existsSync(STORE_FILE)) {
+      lastStoreMtime = fs.statSync(STORE_FILE).mtimeMs;
+    }
   } catch (err) {
     console.error("Failed to write site-store.json:", err);
   }
 }
+
