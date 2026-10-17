@@ -112,6 +112,11 @@ function getDefaultState(): SiteStoreState {
   };
 }
 
+declare global {
+  // eslint-disable-next-line no-var
+  var __nodeDropsStore: SiteStoreState | undefined;
+}
+
 let lastStoreMtime = 0;
 
 export function getStore(): SiteStoreState {
