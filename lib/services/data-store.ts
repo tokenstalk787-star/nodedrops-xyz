@@ -47,6 +47,27 @@ export interface TelemetryEvent {
   timestamp: string;
 }
 
+export interface StoredUser {
+  id: string;
+  email: string;
+  name: string;
+  passwordHash?: string;
+  role: "ADMIN" | "EDITOR" | "USER";
+  status: "ACTIVE" | "SUSPENDED";
+  provider: "email" | "google" | "x" | "github";
+  providerId?: string;
+  avatarUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StoredSession {
+  id: string;
+  sessionTokenHash: string;
+  userId: string;
+  expiresAt: string;
+}
+
 export interface SiteStoreState {
   theme: ThemeConfigItem;
   settings: SiteSettingsData;
@@ -60,6 +81,8 @@ export interface SiteStoreState {
   opportunities: OpportunityItem[];
   commandTemplates: CommandTemplateItem[];
   troubleshooting: TroubleshootingItem[];
+  users: StoredUser[];
+  sessions: StoredSession[];
   telemetry: {
     viewsByPath: Record<string, number>;
     totalViews: number;
@@ -98,6 +121,20 @@ function getDefaultState(): SiteStoreState {
     opportunities: JSON.parse(JSON.stringify(SEED_OPPORTUNITIES)),
     commandTemplates: JSON.parse(JSON.stringify(SEED_COMMAND_TEMPLATES)),
     troubleshooting: JSON.parse(JSON.stringify(SEED_TROUBLESHOOTING)),
+    users: [
+      {
+        id: "admin-default",
+        email: "admin@nodedrops.xyz",
+        name: "Lead System Admin",
+        passwordHash: "$2a$12$K1dJv.e32Mh.RjQpQ0X0qO3Xj0yG4nUjA8vFq2K9gq0123456789a",
+        role: "ADMIN",
+        status: "ACTIVE",
+        provider: "email",
+        createdAt: "2026-04-12T00:00:00Z",
+        updatedAt: "2026-04-12T00:00:00Z",
+      },
+    ],
+    sessions: [],
     telemetry: {
       viewsByPath: {
         "/": 38,
@@ -139,6 +176,8 @@ export function getStore(): SiteStoreState {
         ...parsed,
         settings: { ...defaults.settings, ...(parsed.settings || {}) },
         telemetry: { ...defaults.telemetry, ...(parsed.telemetry || {}) },
+        users: Array.isArray(parsed.users) ? parsed.users : defaults.users,
+        sessions: Array.isArray(parsed.sessions) ? parsed.sessions : defaults.sessions,
       };
       lastStoreMtime = stat.mtimeMs;
       return globalThis.__nodeDropsStore!;

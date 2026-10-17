@@ -29,20 +29,54 @@ export async function POST(req: NextRequest) {
     const { email, password } = validated.data;
     const hasDb = await isDatabaseConnected();
 
-    if (!hasDb) {
-      // Demo administrative fallback for testing when TiDB credentials are not yet populated
-      if (email === "admin@nodedrops.xyz" && password === "NodeDrops2026!Admin") {
+    // 1. Check demo administrative fallback
+    if (email.toLowerCase() === "admin@nodedrops.xyz" && password === "NodeDrops2026!Admin") {
+      await createSession("admin-default");
+      return NextResponse.json({
+        success: true,
+        user: {
+          id: "admin-default",
+          email: "admin@nodedrops.xyz",
+          name: "Lead System Admin",
+          role: "ADMIN",
+          status: "ACTIVE",
+          provider: "email",
+        },
+      });
+    }
+
+    // 2. Check store users
+    const { getStore } = await import("@/lib/services/data-store");
+    const store = getStore();
+    const storedUser = (store.users || []).find((u) => u.email.toLowerCase() === email.toLowerCase());
+
+    if (storedUser && storedUser.passwordHash) {
+      if (storedUser.status === "SUSPENDED") {
+        return NextResponse.json(
+          { error: "This operator account is suspended. Contact security@nodedrops.xyz." },
+          { status: 403 }
+        );
+      }
+
+      const isValid = await verifyPassword(password, storedUser.passwordHash);
+      if (isValid) {
+        await createSession(storedUser.id);
         return NextResponse.json({
           success: true,
           user: {
-            id: "demo-admin",
-            email: "admin@nodedrops.xyz",
-            name: "Lead System Admin",
-            role: "ADMIN",
-            status: "ACTIVE",
+            id: storedUser.id,
+            email: storedUser.email,
+            name: storedUser.name,
+            role: storedUser.role,
+            status: storedUser.status,
+            provider: storedUser.provider,
+            avatarUrl: storedUser.avatarUrl,
           },
         });
       }
+    }
+
+    if (!hasDb) {
       return NextResponse.json(
         { error: "Invalid email or password." },
         { status: 401 }

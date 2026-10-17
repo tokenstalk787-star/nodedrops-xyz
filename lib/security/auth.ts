@@ -35,6 +35,8 @@ export function hashToken(token: string): string {
   return crypto.createHash("sha256").update(token).digest("hex");
 }
 
+import { getStore, saveStore } from "../services/data-store";
+
 /**
  * Create a new user session in database and return session token
  */
@@ -44,6 +46,7 @@ export async function createSession(userId: string): Promise<string> {
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + SESSION_EXPIRY_DAYS);
 
+  let dbSaved = false;
   try {
     await prisma.session.create({
       data: {
@@ -52,8 +55,24 @@ export async function createSession(userId: string): Promise<string> {
         expiresAt,
       },
     });
+    dbSaved = true;
   } catch (error) {
-    console.warn("Could not create DB session (DB might be in demo mode):", error);
+    // Database fallback to store
+  }
+
+  if (!dbSaved) {
+    const store = getStore();
+    store.sessions = store.sessions || [];
+    // prune expired
+    const now = new Date().toISOString();
+    store.sessions = store.sessions.filter((s) => s.expiresAt > now);
+    store.sessions.push({
+      id: `sess-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      sessionTokenHash: tokenHash,
+      userId,
+      expiresAt: expiresAt.toISOString(),
+    });
+    saveStore(store);
   }
 
   // Set HTTP-only secure cookie
@@ -77,13 +96,19 @@ export async function destroySession(): Promise<void> {
   const sessionToken = cookieStore.get(SESSION_COOKIE_NAME)?.value;
 
   if (sessionToken) {
+    const tokenHash = hashToken(sessionToken);
     try {
-      const tokenHash = hashToken(sessionToken);
       await prisma.session.deleteMany({
         where: { sessionTokenHash: tokenHash },
       });
     } catch (e) {
-      console.warn("Failed to delete session record:", e);
+      // ignore
+    }
+
+    const store = getStore();
+    if (store.sessions) {
+      store.sessions = store.sessions.filter((s) => s.sessionTokenHash !== tokenHash);
+      saveStore(store);
     }
   }
 
@@ -96,6 +121,8 @@ export type SafeUser = {
   name: string | null;
   role: "ADMIN" | "EDITOR" | "USER";
   status: "ACTIVE" | "SUSPENDED";
+  provider?: string;
+  avatarUrl?: string;
 };
 
 /**
@@ -111,35 +138,73 @@ export async function getCurrentUser(): Promise<SafeUser | null> {
     }
 
     const tokenHash = hashToken(sessionToken);
-    const session = await prisma.session.findUnique({
-      where: { sessionTokenHash: tokenHash },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            role: true,
-            status: true,
+
+    // Try DB first
+    try {
+      const session = await prisma.session.findUnique({
+        where: { sessionTokenHash: tokenHash },
+        include: {
+          user: {
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              role: true,
+              status: true,
+            },
           },
         },
-      },
-    });
+      });
 
-    if (!session || session.expiresAt < new Date()) {
       if (session) {
-        await prisma.session.delete({ where: { id: session.id } }).catch(() => {});
+        if (session.expiresAt < new Date()) {
+          await prisma.session.delete({ where: { id: session.id } }).catch(() => {});
+          return null;
+        }
+
+        if (session.user.status === "SUSPENDED") {
+          return null;
+        }
+
+        return session.user;
       }
-      return null;
+    } catch {
+      // Fallback to store
     }
 
-    if (session.user.status === "SUSPENDED") {
-      return null;
+    // Check store sessions
+    const store = getStore();
+    const storedSession = (store.sessions || []).find((s) => s.sessionTokenHash === tokenHash);
+
+    if (storedSession && new Date(storedSession.expiresAt) > new Date()) {
+      if (storedSession.userId === "demo-admin" || storedSession.userId === "admin-default") {
+        return {
+          id: "admin-default",
+          email: "admin@nodedrops.xyz",
+          name: "Lead System Admin",
+          role: "ADMIN",
+          status: "ACTIVE",
+          provider: "email",
+        };
+      }
+
+      const storedUser = (store.users || []).find((u) => u.id === storedSession.userId);
+      if (storedUser && storedUser.status !== "SUSPENDED") {
+        return {
+          id: storedUser.id,
+          email: storedUser.email,
+          name: storedUser.name,
+          role: storedUser.role,
+          status: storedUser.status,
+          provider: storedUser.provider,
+          avatarUrl: storedUser.avatarUrl,
+        };
+      }
     }
 
-    return session.user;
+    return null;
   } catch (error) {
-    console.warn("Session check error (database may not be ready):", error);
+    console.warn("Session check error:", error);
     return null;
   }
 }

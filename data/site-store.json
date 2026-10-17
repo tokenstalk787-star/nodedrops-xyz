@@ -1200,9 +1200,105 @@
       ]
     }
   ],
+  "users": [
+    {
+      "id": "admin-default",
+      "email": "admin@nodedrops.xyz",
+      "name": "Lead System Admin",
+      "passwordHash": "$2a$12$K1dJv.e32Mh.RjQpQ0X0qO3Xj0yG4nUjA8vFq2K9gq0123456789a",
+      "role": "ADMIN",
+      "status": "ACTIVE",
+      "provider": "email",
+      "createdAt": "2026-04-12T00:00:00Z",
+      "updatedAt": "2026-04-12T00:00:00Z"
+    },
+    {
+      "id": "usr-1792208805318-cckkk",
+      "email": "operator_1792208800675@nodedrops.xyz",
+      "name": "Test Validator Operator",
+      "passwordHash": "$2a$12$QxWKajsxMG9rSPiIk/2teOXkOzEDyNTTMleZghZtt9T6/ODtGubdy",
+      "role": "USER",
+      "status": "ACTIVE",
+      "provider": "email",
+      "createdAt": "2026-10-17T03:46:45.318Z",
+      "updatedAt": "2026-10-17T03:46:45.318Z"
+    },
+    {
+      "id": "usr-google-1792208819828-q8s1",
+      "email": "google.validator@gmail.com",
+      "name": "Google Validator",
+      "role": "USER",
+      "status": "ACTIVE",
+      "provider": "google",
+      "providerId": "usr-google-1792208819828-q8s1",
+      "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb",
+      "createdAt": "2026-10-17T03:46:59.828Z",
+      "updatedAt": "2026-10-17T03:46:59.828Z"
+    },
+    {
+      "id": "usr-x-1792208820650-w6y4",
+      "email": "berachain.runner@x.com",
+      "name": "@BerachainRunner",
+      "role": "USER",
+      "status": "ACTIVE",
+      "provider": "x",
+      "providerId": "usr-x-1792208820650-w6y4",
+      "createdAt": "2026-10-17T03:47:00.650Z",
+      "updatedAt": "2026-10-17T03:47:00.650Z"
+    },
+    {
+      "id": "usr-github-1792208821174-d0fp",
+      "email": "celestia.op@github.com",
+      "name": "celestia-operator",
+      "role": "USER",
+      "status": "ACTIVE",
+      "provider": "github",
+      "providerId": "usr-github-1792208821174-d0fp",
+      "createdAt": "2026-10-17T03:47:01.174Z",
+      "updatedAt": "2026-10-17T03:47:01.174Z"
+    }
+  ],
+  "sessions": [
+    {
+      "id": "sess-1792208805657-yw07q",
+      "sessionTokenHash": "53c1943260ae84145dda1bfc9ee560f1f70c05b3854d114308fe5c019a0e9096",
+      "userId": "usr-1792208805318-cckkk",
+      "expiresAt": "2026-10-24T03:46:45.321Z"
+    },
+    {
+      "id": "sess-1792208812120-dno3p",
+      "sessionTokenHash": "f0884eb5b3eba20beaa479ccf7846a6c2afb45e77b66744320565fd445494a7c",
+      "userId": "usr-1792208805318-cckkk",
+      "expiresAt": "2026-10-24T03:46:52.111Z"
+    },
+    {
+      "id": "sess-1792208816686-ne6vb",
+      "sessionTokenHash": "52d291c8f7d19ff0caac62e44c822fb32351778169208a362dd1a34e374de9ae",
+      "userId": "admin-default",
+      "expiresAt": "2026-10-24T03:46:56.681Z"
+    },
+    {
+      "id": "sess-1792208819875-9yn6v",
+      "sessionTokenHash": "29b288235f0dd094e1e986f08874ffd41e42166f521322c2d3dcc16c88f8a39e",
+      "userId": "usr-google-1792208819828-q8s1",
+      "expiresAt": "2026-10-24T03:46:59.830Z"
+    },
+    {
+      "id": "sess-1792208820658-z93zb",
+      "sessionTokenHash": "133ec862740f567ee7360e4f0d8eca987c4ac759f522890d5094111a160c6edb",
+      "userId": "usr-x-1792208820650-w6y4",
+      "expiresAt": "2026-10-24T03:47:00.653Z"
+    },
+    {
+      "id": "sess-1792208821179-9z42t",
+      "sessionTokenHash": "71b8413201c4eb3d241bfe86bd5a6f4d6cfefb7cd7ff9e7af3425140e5db0afa",
+      "userId": "usr-github-1792208821174-d0fp",
+      "expiresAt": "2026-10-24T03:47:01.175Z"
+    }
+  ],
   "telemetry": {
     "viewsByPath": {
-      "/": 43,
+      "/": 45,
       "/networks": 25,
       "/guides": 32,
       "/tools/hardware-checker": 19,
@@ -1217,10 +1313,40 @@
       "/admin/users": 1,
       "/admin/analytics": 1,
       "/admin/settings": 1,
-      "/learn": 3
+      "/learn": 3,
+      "/login": 1,
+      "/register": 1
     },
-    "totalViews": 170,
+    "totalViews": 174,
     "events": [
+      {
+        "id": "tel-1792208870202-3hh9",
+        "path": "/",
+        "referrer": "http://localhost:3001/",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T03:47:50.202Z"
+      },
+      {
+        "id": "tel-1792208838167-l19k",
+        "path": "/register",
+        "referrer": "http://localhost:3001/",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T03:47:18.167Z"
+      },
+      {
+        "id": "tel-1792208816604-hohm",
+        "path": "/login",
+        "referrer": "http://localhost:3001/",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T03:46:56.604Z"
+      },
+      {
+        "id": "tel-1792208011186-lvjt",
+        "path": "/",
+        "referrer": "",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T03:33:31.186Z"
+      },
       {
         "id": "tel-1792207360832-ligl",
         "path": "/",
