@@ -65,11 +65,11 @@ export function NodeDashboardHeader({
         </div>
       </div>
 
-      {/* 2. SECONDARY SUB-NAV PILLS BAR (CryptoRank Reference Style) */}
-      <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
+      {/* 2. SECONDARY SUB-NAV PILLS BAR (CryptoRank Reference Style, Touch-scrollable on mobile) */}
+      <div className="flex items-center gap-2 text-xs font-mono overflow-x-auto pb-1.5 sm:pb-0 sm:flex-wrap no-scrollbar">
         <button
           onClick={() => onFilterChange?.("ALL")}
-          className={`px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+          className={`shrink-0 px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
             activeTab === "ALL"
               ? "bg-brand-purple text-white font-bold shadow-glow"
               : "bg-[#0d1428] border border-dark-card-border text-slate-300 hover:text-white hover:border-slate-500"
@@ -83,7 +83,7 @@ export function NodeDashboardHeader({
 
         <button
           onClick={() => onFilterChange?.("CONFIRMED")}
-          className={`px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+          className={`shrink-0 px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
             activeTab === "CONFIRMED"
               ? "bg-brand-purple text-white font-bold shadow-glow"
               : "bg-[#0d1428] border border-dark-card-border text-slate-300 hover:text-white hover:border-slate-500"
@@ -100,7 +100,7 @@ export function NodeDashboardHeader({
 
         <button
           onClick={() => onFilterChange?.("WATCHLIST")}
-          className={`px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+          className={`shrink-0 px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
             activeTab === "WATCHLIST"
               ? "bg-brand-purple text-white font-bold shadow-glow"
               : "bg-[#0d1428] border border-dark-card-border text-slate-300 hover:text-white hover:border-slate-500"
@@ -117,7 +117,7 @@ export function NodeDashboardHeader({
 
         <Link
           href="/contact?type=submit_airdrop"
-          className="px-3.5 py-1.5 rounded-lg bg-[#0d1428] border border-dark-card-border text-slate-300 hover:text-white hover:border-brand-purple transition-all flex items-center gap-1.5"
+          className="shrink-0 px-3.5 py-1.5 rounded-lg bg-[#0d1428] border border-dark-card-border text-slate-300 hover:text-white hover:border-brand-purple transition-all flex items-center gap-1.5"
         >
           <Plus className="w-3.5 h-3.5 text-brand-purple-light" />
           <span>Submit Airdrop / Feedback</span>
@@ -125,10 +125,10 @@ export function NodeDashboardHeader({
       </div>
 
       {/* 3. HEADLINE, INTRO & TOP-RIGHT ACTION BUTTONS */}
-      <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6 pt-1">
+      <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-5 pt-1">
         {/* Left Side: Headline & Description */}
         <div className="space-y-2 max-w-3xl">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-white tracking-tight leading-tight">
             Potential Airdrops Dashboard
           </h1>
 

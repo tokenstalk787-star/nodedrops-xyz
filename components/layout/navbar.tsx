@@ -224,48 +224,100 @@ export function Navbar() {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-b border-border bg-background-secondary px-4 pt-3 pb-5 space-y-2">
-          {navLinks.map((link) => {
-            const Icon = link.icon;
-            const isActive = pathname?.startsWith(link.href);
-            return (
+        <div className="md:hidden border-b border-border bg-[#070b16]/98 backdrop-blur-xl px-4 pt-3 pb-6 space-y-3 animate-fade-in shadow-2xl">
+          {/* Quick Search on Mobile */}
+          <Link
+            href="/search"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl border border-dark-card-border bg-[#0b1020] text-text-muted hover:text-white text-xs font-mono"
+          >
+            <Search className="w-4 h-4 text-brand-cyan" />
+            <span>Search guides, networks, and tools...</span>
+          </Link>
+
+          {/* Primary Nav Links */}
+          <div className="space-y-1">
+            {navLinks.map((link) => {
+              const Icon = link.icon;
+              const isActive = pathname?.startsWith(link.href);
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm transition-colors ${
+                    isActive
+                      ? "bg-brand-purple/20 text-brand-cyan border border-brand-purple/40 font-semibold"
+                      : "text-text-secondary hover:text-text-primary hover:bg-background-hover"
+                  }`}
+                >
+                  <Icon className="w-4 h-4 text-brand-blue" />
+                  <span>{link.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+
+          {/* Quick Tool Links on Mobile */}
+          <div className="pt-2 border-t border-border/60">
+            <span className="text-[10px] font-mono text-text-muted uppercase tracking-wider block px-1 mb-1.5">
+              Quick Node Tools
+            </span>
+            <div className="grid grid-cols-2 gap-2 text-xs font-mono">
               <Link
-                key={link.href}
-                href={link.href}
+                href="/tools/hardware-checker"
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm ${
-                  isActive
-                    ? "bg-brand-purple/20 text-brand-purple-light font-medium"
-                    : "text-text-secondary hover:text-text-primary hover:bg-background-hover"
-                }`}
+                className="flex items-center gap-1.5 p-2 rounded-lg bg-[#0b1020] border border-dark-card-border text-slate-300 hover:text-white"
               >
-                <Icon className="w-5 h-5 text-brand-blue" />
-                <span>{link.label}</span>
+                <Cpu className="w-3.5 h-3.5 text-brand-purple-light" />
+                <span className="truncate">Hardware Check</span>
               </Link>
-            );
-          })}
+              <Link
+                href="/tools/command-builder"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-1.5 p-2 rounded-lg bg-[#0b1020] border border-dark-card-border text-slate-300 hover:text-white"
+              >
+                <Wrench className="w-3.5 h-3.5 text-brand-cyan" />
+                <span className="truncate">Command Builder</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* User Auth & Actions on Mobile */}
           <div className="pt-2 border-t border-border/60">
             {currentUser ? (
               <div className="space-y-2">
-                <div className="px-3 py-2 text-xs font-mono text-brand-cyan">
-                  Signed in as: {currentUser.name || currentUser.email}
+                <div className="px-3 py-2 rounded-xl bg-[#0b1020] border border-dark-card-border flex items-center justify-between">
+                  <div className="min-w-0">
+                    <div className="text-xs font-bold text-white truncate">
+                      {currentUser.name || currentUser.email?.split("@")[0]}
+                    </div>
+                    <div className="text-[10px] font-mono text-text-muted truncate">
+                      {currentUser.email}
+                    </div>
+                  </div>
+                  <span className="px-2 py-0.5 rounded text-[9px] font-mono font-bold bg-brand-purple/20 text-brand-purple-light border border-brand-purple/30">
+                    {currentUser.role}
+                  </span>
                 </div>
+
                 {currentUser.role === "ADMIN" && (
                   <Link
                     href="/admin"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-text-primary hover:bg-background-hover"
+                    className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-sm bg-brand-purple/10 border border-brand-purple/30 text-brand-cyan font-medium"
                   >
                     <ShieldCheck className="w-4 h-4 text-brand-cyan" />
                     <span>Admin Control Center</span>
                   </Link>
                 )}
+
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-rose-400 hover:bg-rose-500/10 text-left"
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-rose-400 bg-rose-500/10 border border-rose-500/20 hover:bg-rose-500/20 text-center"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-3.5 h-3.5" />
                   <span>Sign Out</span>
                 </button>
               </div>
@@ -274,7 +326,7 @@ export function Navbar() {
                 <Link
                   href="/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm border border-dark-card-border text-white hover:bg-background-hover text-center"
+                  className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm border border-dark-card-border bg-[#0b1020] text-white hover:bg-background-hover text-center"
                 >
                   <LogIn className="w-4 h-4 text-brand-cyan" />
                   <span>Sign In</span>
@@ -282,7 +334,7 @@ export function Navbar() {
                 <Link
                   href="/register"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm bg-brand-purple text-white hover:bg-brand-purple-light text-center font-semibold"
+                  className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm bg-gradient-to-r from-brand-purple to-indigo-600 text-white hover:from-brand-purple-light hover:to-indigo-500 text-center font-bold shadow-md"
                 >
                   <span>Register</span>
                 </Link>

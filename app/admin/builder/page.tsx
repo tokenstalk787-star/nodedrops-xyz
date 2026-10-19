@@ -91,6 +91,7 @@ function VisualPageBuilderContent() {
   const [selectedSectionId, setSelectedSectionId] = React.useState<string>("");
   const [viewport, setViewport] = React.useState<"desktop" | "tablet" | "mobile">("desktop");
   const [mode, setMode] = React.useState<"edit" | "preview">("edit");
+  const [mobilePanel, setMobilePanel] = React.useState<"outline" | "canvas" | "inspector">("canvas");
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [insertTargetIndex, setInsertTargetIndex] = React.useState<number | null>(null);
   const [showNewPageModal, setShowNewPageModal] = React.useState(false);
@@ -650,18 +651,18 @@ function VisualPageBuilderContent() {
       {/* ========================================================================= */}
       {/* 1. TOP BUILDER TOOLBAR                                                   */}
       {/* ========================================================================= */}
-      <header className="h-14 border-b border-dark-card-border bg-[#080b14] px-4 flex items-center justify-between shrink-0 text-xs z-30">
-        <div className="flex items-center gap-3">
+      <header className="h-14 border-b border-dark-card-border bg-[#080b14] px-2.5 sm:px-4 flex items-center justify-between shrink-0 text-xs z-30 overflow-x-auto no-scrollbar gap-2">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <Link
             href="/admin/pages"
             className="flex items-center gap-1.5 text-text-muted hover:text-white transition-colors font-mono"
           >
             <span>&larr; Pages</span>
           </Link>
-          <div className="h-4 w-px bg-dark-card-border" />
+          <div className="h-4 w-px bg-dark-card-border hidden sm:block" />
 
           {/* Page Selector Dropdown */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <select
               value={selectedPageId}
               onChange={(e) => {
@@ -672,7 +673,7 @@ function VisualPageBuilderContent() {
                   setSelectedSectionId(p.sections[0].id);
                 }
               }}
-              className="h-8 rounded-lg border border-dark-card-border bg-[#0d1222] px-3 font-mono text-white text-xs font-semibold focus:outline-none focus:border-brand-purple"
+              className="h-8 rounded-lg border border-dark-card-border bg-[#0d1222] px-2 sm:px-3 font-mono text-white text-xs font-semibold focus:outline-none focus:border-brand-purple max-w-[130px] sm:max-w-[200px] truncate"
             >
               {pages.map((p) => (
                 <option key={p.id} value={p.id}>
@@ -842,12 +843,47 @@ function VisualPageBuilderContent() {
         </div>
       )}
 
+      {/* MOBILE RESPONSIVE PANEL SELECTOR (< lg screens) */}
+      <div className="lg:hidden flex items-center justify-between border-b border-dark-card-border bg-[#070b16] px-2 py-1.5 text-xs font-mono shrink-0">
+        <button
+          onClick={() => setMobilePanel("outline")}
+          className={`flex-1 py-1.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 ${
+            mobilePanel === "outline" ? "bg-brand-purple text-white font-bold" : "text-text-muted hover:text-white"
+          }`}
+        >
+          <Layers className="w-3.5 h-3.5" />
+          <span>Outline ({currentPage.sections.length})</span>
+        </button>
+        <button
+          onClick={() => setMobilePanel("canvas")}
+          className={`flex-1 py-1.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 ${
+            mobilePanel === "canvas" ? "bg-brand-purple text-white font-bold" : "text-text-muted hover:text-white"
+          }`}
+        >
+          <Eye className="w-3.5 h-3.5 text-brand-cyan" />
+          <span>Canvas</span>
+        </button>
+        <button
+          onClick={() => setMobilePanel("inspector")}
+          className={`flex-1 py-1.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 ${
+            mobilePanel === "inspector" ? "bg-brand-purple text-white font-bold" : "text-text-muted hover:text-white"
+          }`}
+        >
+          <Settings className="w-3.5 h-3.5 text-brand-purple-light" />
+          <span>Properties</span>
+        </button>
+      </div>
+
       {/* ========================================================================= */}
       {/* 2. MAIN WORKSPACE (LEFT TREE, CENTER CANVAS, RIGHT INSPECTOR)             */}
       {/* ========================================================================= */}
       <div className="flex-1 flex overflow-hidden">
         {/* LEFT PANEL: Section Hierarchy / Outline */}
-        <aside className="w-64 border-r border-dark-card-border bg-[#080c17] flex flex-col shrink-0 text-xs">
+        <aside
+          className={`${
+            mobilePanel === "outline" ? "flex" : "hidden"
+          } lg:flex w-full lg:w-64 border-r border-dark-card-border bg-[#080c17] flex-col shrink-0 text-xs overflow-y-auto`}
+        >
           <div className="p-3 border-b border-dark-card-border bg-[#060810] flex items-center justify-between">
             <div className="font-mono text-[11px] text-text-muted uppercase tracking-wider font-semibold">
               Sections Outline ({currentPage.sections.length})
@@ -905,6 +941,17 @@ function VisualPageBuilderContent() {
                     <MoveDown className="w-3 h-3" />
                   </button>
                   <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedSectionId(sec.id);
+                      setMobilePanel("inspector");
+                    }}
+                    title="Edit Properties"
+                    className="p-1 rounded text-text-muted hover:text-brand-purple-light lg:hidden"
+                  >
+                    <Settings className="w-3 h-3 text-brand-purple-light" />
+                  </button>
+                  <button
                     onClick={(e) => removeSection(sec.id, e)}
                     title="Delete"
                     className="p-1 rounded text-text-muted hover:text-rose-400"
@@ -928,7 +975,11 @@ function VisualPageBuilderContent() {
         </aside>
 
         {/* CENTER CANVAS: WYSIWYG Real-Time Interactive Canvas */}
-        <main className="flex-1 bg-[#020408] p-4 sm:p-6 overflow-y-auto flex justify-center items-start">
+        <main
+          className={`${
+            mobilePanel === "canvas" ? "flex" : "hidden"
+          } lg:flex flex-1 bg-[#020408] p-2 sm:p-6 overflow-y-auto justify-center items-start w-full min-w-0`}
+        >
           <div
             className={`transition-all duration-300 bg-[#080b14] border border-dark-card-border rounded-2xl overflow-hidden shadow-2xl ${
               viewport === "desktop"
@@ -970,7 +1021,11 @@ function VisualPageBuilderContent() {
         </main>
 
         {/* RIGHT PANEL: Comprehensive Property Inspector */}
-        <aside className="w-80 border-l border-dark-card-border bg-[#080c17] flex flex-col shrink-0 overflow-y-auto p-4 space-y-5 text-xs font-mono">
+        <aside
+          className={`${
+            mobilePanel === "inspector" ? "flex" : "hidden"
+          } lg:flex w-full lg:w-80 border-l border-dark-card-border bg-[#080c17] flex-col shrink-0 overflow-y-auto p-4 space-y-5 text-xs font-mono`}
+        >
           <div className="flex items-center justify-between pb-3 border-b border-dark-card-border">
             <div>
               <span className="text-[10px] text-text-muted uppercase">Properties</span>

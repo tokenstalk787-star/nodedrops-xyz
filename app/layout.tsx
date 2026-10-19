@@ -1,9 +1,16 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Navbar } from "../components/layout/navbar";
 import { Footer } from "../components/layout/footer";
 import { TelemetryTracker } from "../components/analytics/telemetry-tracker";
 import { getThemeConfig, getSiteSettings } from "@/lib/services/data-service";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#050814",
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings();
@@ -78,17 +85,17 @@ export default async function RootLayout({
   `;
 
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark overflow-x-hidden">
       <head>
         <style
           id="nodedrops-theme-variables"
           dangerouslySetInnerHTML={{ __html: dynamicCss }}
         />
       </head>
-      <body className="min-h-screen flex flex-col bg-background text-text-primary antialiased selection:bg-brand-purple/40 selection:text-white">
+      <body className="min-h-screen flex flex-col bg-background text-text-primary antialiased selection:bg-brand-purple/40 selection:text-white overflow-x-hidden w-full max-w-[100vw]">
         <TelemetryTracker />
         <Navbar />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 w-full max-w-full overflow-x-hidden">{children}</main>
         <Footer />
       </body>
     </html>
