@@ -1334,7 +1334,7 @@
   ],
   "telemetry": {
     "viewsByPath": {
-      "/": 52,
+      "/": 53,
       "/networks": 26,
       "/guides": 33,
       "/tools/hardware-checker": 19,
@@ -1355,8 +1355,15 @@
       "/opportunities/movement-labs-porto-testnet-node": 1,
       "/tools": 1
     },
-    "totalViews": 191,
+    "totalViews": 192,
     "events": [
+      {
+        "id": "tel-1792405469374-6vqp",
+        "path": "/",
+        "referrer": "",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-19T10:24:29.374Z"
+      },
       {
         "id": "tel-1792233764558-akxu",
         "path": "/login",
