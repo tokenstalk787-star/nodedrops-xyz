@@ -1256,6 +1256,42 @@
       "providerId": "usr-github-1792208821174-d0fp",
       "createdAt": "2026-10-17T03:47:01.174Z",
       "updatedAt": "2026-10-17T03:47:01.174Z"
+    },
+    {
+      "id": "usr-google-1792209154269-6bno",
+      "email": "alex.validator@gmail.com",
+      "name": "Alex Vance",
+      "role": "USER",
+      "status": "ACTIVE",
+      "provider": "google",
+      "providerId": "usr-google-1792209154269-6bno",
+      "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=face",
+      "createdAt": "2026-10-17T03:52:34.269Z",
+      "updatedAt": "2026-10-17T03:52:34.269Z"
+    },
+    {
+      "id": "usr-x-1792209189110-g5s6",
+      "email": "nodemaster@x.com",
+      "name": "@NodeMasterX",
+      "role": "USER",
+      "status": "ACTIVE",
+      "provider": "x",
+      "providerId": "usr-x-1792209189110-g5s6",
+      "avatarUrl": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
+      "createdAt": "2026-10-17T03:53:09.110Z",
+      "updatedAt": "2026-10-17T03:53:09.110Z"
+    },
+    {
+      "id": "usr-github-1792209207487-0w3z",
+      "email": "dev.operator@github.com",
+      "name": "dev-operator",
+      "role": "USER",
+      "status": "ACTIVE",
+      "provider": "github",
+      "providerId": "usr-github-1792209207487-0w3z",
+      "avatarUrl": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop&crop=face",
+      "createdAt": "2026-10-17T03:53:27.487Z",
+      "updatedAt": "2026-10-17T03:53:27.487Z"
     }
   ],
   "sessions": [
@@ -1298,9 +1334,9 @@
   ],
   "telemetry": {
     "viewsByPath": {
-      "/": 45,
-      "/networks": 25,
-      "/guides": 32,
+      "/": 52,
+      "/networks": 26,
+      "/guides": 33,
       "/tools/hardware-checker": 19,
       "/opportunities": 28,
       "/admin": 4,
@@ -1313,12 +1349,133 @@
       "/admin/users": 1,
       "/admin/analytics": 1,
       "/admin/settings": 1,
-      "/learn": 3,
-      "/login": 1,
-      "/register": 1
+      "/learn": 4,
+      "/login": 2,
+      "/register": 5,
+      "/opportunities/movement-labs-porto-testnet-node": 1,
+      "/tools": 1
     },
-    "totalViews": 174,
+    "totalViews": 191,
     "events": [
+      {
+        "id": "tel-1792233764558-akxu",
+        "path": "/login",
+        "referrer": "http://localhost:3001/",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T10:42:44.558Z"
+      },
+      {
+        "id": "tel-1792233751689-2zpw",
+        "path": "/register",
+        "referrer": "http://localhost:3001/",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T10:42:31.689Z"
+      },
+      {
+        "id": "tel-1792209219436-0wyk",
+        "path": "/",
+        "referrer": "http://localhost:3001/",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T03:53:39.436Z"
+      },
+      {
+        "id": "tel-1792209209710-duks",
+        "path": "/",
+        "referrer": "http://localhost:3001/",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T03:53:29.710Z"
+      },
+      {
+        "id": "tel-1792209204503-g6oq",
+        "path": "/register",
+        "referrer": "http://localhost:3001/",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T03:53:24.503Z"
+      },
+      {
+        "id": "tel-1792209198722-u5ab",
+        "path": "/",
+        "referrer": "http://localhost:3001/",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T03:53:18.722Z"
+      },
+      {
+        "id": "tel-1792209191053-5egu",
+        "path": "/",
+        "referrer": "http://localhost:3001/",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T03:53:11.055Z"
+      },
+      {
+        "id": "tel-1792209186154-y9ll",
+        "path": "/register",
+        "referrer": "http://localhost:3001/",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T03:53:06.154Z"
+      },
+      {
+        "id": "tel-1792209184701-a1w5",
+        "path": "/",
+        "referrer": "http://localhost:3001/",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T03:53:04.701Z"
+      },
+      {
+        "id": "tel-1792209156676-v3rs",
+        "path": "/",
+        "referrer": "http://localhost:3001/",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T03:52:36.676Z"
+      },
+      {
+        "id": "tel-1792209135922-9leb",
+        "path": "/register",
+        "referrer": "http://localhost:3001/",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T03:52:15.922Z"
+      },
+      {
+        "id": "tel-1792209115576-okyl",
+        "path": "/",
+        "referrer": "http://localhost:3001/",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T03:51:55.576Z"
+      },
+      {
+        "id": "tel-1792209074962-om84",
+        "path": "/learn",
+        "referrer": "http://localhost:3001/",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T03:51:14.962Z"
+      },
+      {
+        "id": "tel-1792209061563-9ea8",
+        "path": "/tools",
+        "referrer": "http://localhost:3001/",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T03:51:01.563Z"
+      },
+      {
+        "id": "tel-1792209032834-140p",
+        "path": "/guides",
+        "referrer": "http://localhost:3001/",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T03:50:32.834Z"
+      },
+      {
+        "id": "tel-1792209020593-diue",
+        "path": "/networks",
+        "referrer": "http://localhost:3001/",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T03:50:20.593Z"
+      },
+      {
+        "id": "tel-1792208945073-23mz",
+        "path": "/opportunities/movement-labs-porto-testnet-node",
+        "referrer": "http://localhost:3001/",
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)",
+        "timestamp": "2026-10-17T03:49:05.073Z"
+      },
       {
         "id": "tel-1792208870202-3hh9",
         "path": "/",
