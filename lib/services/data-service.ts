@@ -1,5 +1,14 @@
-import { prisma, isDatabaseConnected } from "../db/prisma";
+import { prisma, isDatabaseConnected, markDatabaseTablesMissing } from "../db/prisma";
 import { getStore, saveStore, SiteSettingsData } from "./data-store";
+
+function handleDbQueryError(context: string, error: any) {
+  if (error?.code === "P2021" || error?.message?.includes("does not exist")) {
+    markDatabaseTablesMissing();
+    return; // Silently fallback when schema tables aren't migrated
+  }
+  console.warn(`[DataService] DB query fallback in ${context}:`, error?.message || error);
+}
+
 import {
   SEED_NETWORKS,
   SEED_GUIDES,
@@ -100,7 +109,7 @@ export async function getNetworks(params: {
         };
       }
     } catch (e) {
-      console.warn("DB query error in getNetworks, using fallback:", e);
+      handleDbQueryError("getNetworks", e);
     }
   }
 
@@ -910,7 +919,7 @@ export async function getNavigationMenu(location: "HEADER" | "FOOTER"): Promise<
         };
       }
     } catch (e) {
-      console.warn("DB query error in getNavigationMenu:", e);
+      handleDbQueryError("getNavigationMenu", e);
     }
   }
 
@@ -1008,7 +1017,7 @@ export async function getRedirectRules(): Promise<RedirectRuleItem[]> {
         }));
       }
     } catch (e) {
-      console.warn("DB query error in getRedirectRules:", e);
+      handleDbQueryError("getRedirectRules", e);
     }
   }
 
@@ -1538,7 +1547,7 @@ export async function getSiteSettings(): Promise<SiteSettingsData> {
         };
       }
     } catch (e) {
-      console.warn("DB query error in getSiteSettings:", e);
+      handleDbQueryError("getSiteSettings", e);
     }
   }
   return getStore().settings;

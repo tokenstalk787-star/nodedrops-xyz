@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import os from "os";
 import {
   SEED_NETWORKS,
   SEED_GUIDES,
@@ -90,8 +91,33 @@ export interface SiteStoreState {
   };
 }
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const STORE_FILE = path.join(DATA_DIR, "site-store.json");
+const isServerless = Boolean(
+  process.env.VERCEL ||
+  process.env.AWS_LAMBDA_FUNCTION_NAME ||
+  process.env.LAMBDA_TASK_ROOT
+);
+
+const LOCAL_DATA_DIR = path.join(process.cwd(), "data");
+const LOCAL_STORE_FILE = path.join(LOCAL_DATA_DIR, "site-store.json");
+
+const TMP_DATA_DIR = path.join(os.tmpdir(), "nodedrops-data");
+const TMP_STORE_FILE = path.join(TMP_DATA_DIR, "site-store.json");
+
+function getStoragePaths() {
+  if (isServerless) {
+    return {
+      dir: TMP_DATA_DIR,
+      file: TMP_STORE_FILE,
+      fallbackRead: LOCAL_STORE_FILE,
+    };
+  }
+  return {
+    dir: LOCAL_DATA_DIR,
+    file: LOCAL_STORE_FILE,
+    fallbackRead: null,
+  };
+}
+
 
 function getDefaultState(): SiteStoreState {
   return {
@@ -157,18 +183,23 @@ declare global {
 let lastStoreMtime = 0;
 
 export function getStore(): SiteStoreState {
+  const { file, fallbackRead } = getStoragePaths();
+
   try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
+    let sourceFile: string | null = null;
+    if (fs.existsSync(file)) {
+      sourceFile = file;
+    } else if (fallbackRead && fs.existsSync(fallbackRead)) {
+      sourceFile = fallbackRead;
     }
 
-    if (fs.existsSync(STORE_FILE)) {
-      const stat = fs.statSync(STORE_FILE);
+    if (sourceFile) {
+      const stat = fs.statSync(sourceFile);
       if (globalThis.__nodeDropsStore && stat.mtimeMs === lastStoreMtime) {
         return globalThis.__nodeDropsStore;
       }
 
-      const content = fs.readFileSync(STORE_FILE, "utf-8");
+      const content = fs.readFileSync(sourceFile, "utf-8");
       const parsed = JSON.parse(content);
       const defaults = getDefaultState();
       globalThis.__nodeDropsStore = {
@@ -183,7 +214,7 @@ export function getStore(): SiteStoreState {
       return globalThis.__nodeDropsStore!;
     }
   } catch (err) {
-    console.warn("Failed to read site-store.json, using defaults:", err);
+    // In serverless read or parse error, quietly continue to in-memory or defaults
   }
 
   if (globalThis.__nodeDropsStore) {
@@ -202,15 +233,26 @@ export function saveStore(state?: SiteStoreState): void {
   globalThis.__nodeDropsStore = target;
 
   try {
-    if (!fs.existsSync(DATA_DIR)) {
-      fs.mkdirSync(DATA_DIR, { recursive: true });
+    const { dir, file } = getStoragePaths();
+    if (!fs.existsSync(dir)) {
+      try {
+        fs.mkdirSync(dir, { recursive: true });
+      } catch (mkdirErr: any) {
+        if (mkdirErr?.code === "EROFS" || mkdirErr?.message?.includes("read-only")) {
+          return;
+        }
+      }
     }
-    fs.writeFileSync(STORE_FILE, JSON.stringify(target, null, 2), "utf-8");
-    if (fs.existsSync(STORE_FILE)) {
-      lastStoreMtime = fs.statSync(STORE_FILE).mtimeMs;
+    fs.writeFileSync(file, JSON.stringify(target, null, 2), "utf-8");
+    if (fs.existsSync(file)) {
+      lastStoreMtime = fs.statSync(file).mtimeMs;
     }
-  } catch (err) {
-    console.error("Failed to write site-store.json:", err);
+  } catch (err: any) {
+    // Silently suppress read-only filesystem errors in serverless environments
+    if (err?.code === "EROFS" || err?.message?.includes("read-only file system")) {
+      return;
+    }
+    console.warn("Notice: Persistent site-store write skipped:", err?.message || err);
   }
 }
 
