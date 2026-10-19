@@ -1,13 +1,22 @@
 import { MetadataRoute } from "next";
 import { getNetworks, getGuides, getOpportunities } from "@/lib/services/data-service";
 
+// Har 12 ghante baad sitemap cache revalidate hoga (Google Bot ko instant response milega)
+export const revalidate = 43200;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://nodedrops.xyz";
 
+  // Safe date parser: ISO standard me return karta hai
   const safeDate = (dateVal: any): Date => {
     if (!dateVal) return new Date();
     const d = new Date(dateVal);
     return isNaN(d.getTime()) ? new Date() : d;
+  };
+
+  // Safe URL encoder (XML validation errors se bachata hai)
+  const sanitizeUrl = (url: string): string => {
+    return encodeURI(url.trim());
   };
 
   // Static public routes
@@ -33,37 +42,43 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   try {
-    // Dynamic entities
+    // Dynamic entities fetch
     const [networks, guides, opps] = await Promise.all([
-      getNetworks({ limit: 100 }),
-      getGuides({ limit: 100 }),
-      getOpportunities({ limit: 100 }),
+      getNetworks({ limit: 100 }).catch(() => ({ items: [] })),
+      getGuides({ limit: 100 }).catch(() => ({ items: [] })),
+      getOpportunities({ limit: 100 }).catch(() => ({ items: [] })),
     ]);
 
-    const networkRoutes: MetadataRoute.Sitemap = (networks.items || []).map((n) => ({
-      url: `${baseUrl}/networks/${n.slug}`,
-      lastModified: safeDate(n.lastVerifiedAt || (n as any).updatedAt),
-      changeFrequency: "weekly",
-      priority: 0.85,
-    }));
+    const networkRoutes: MetadataRoute.Sitemap = ((networks as any)?.items || [])
+      .filter((n: any) => Boolean(n?.slug))
+      .map((n: any) => ({
+        url: sanitizeUrl(`${baseUrl}/networks/${n.slug}`),
+        lastModified: safeDate(n.lastVerifiedAt || n.updatedAt),
+        changeFrequency: "weekly" as const,
+        priority: 0.85,
+      }));
 
-    const guideRoutes: MetadataRoute.Sitemap = (guides.items || []).map((g) => ({
-      url: `${baseUrl}/guides/${g.slug}`,
-      lastModified: safeDate(g.lastVerifiedAt || (g as any).publishedAt || (g as any).updatedAt),
-      changeFrequency: "weekly",
-      priority: 0.85,
-    }));
+    const guideRoutes: MetadataRoute.Sitemap = ((guides as any)?.items || [])
+      .filter((g: any) => Boolean(g?.slug))
+      .map((g: any) => ({
+        url: sanitizeUrl(`${baseUrl}/guides/${g.slug}`),
+        lastModified: safeDate(g.lastVerifiedAt || g.publishedAt || g.updatedAt),
+        changeFrequency: "weekly" as const,
+        priority: 0.85,
+      }));
 
-    const opportunityRoutes: MetadataRoute.Sitemap = (opps.items || []).map((o) => ({
-      url: `${baseUrl}/opportunities/${o.slug}`,
-      lastModified: safeDate(o.lastCheckedAt || (o as any).updatedAt),
-      changeFrequency: "daily",
-      priority: 0.75,
-    }));
+    const opportunityRoutes: MetadataRoute.Sitemap = ((opps as any)?.items || [])
+      .filter((o: any) => Boolean(o?.slug))
+      .map((o: any) => ({
+        url: sanitizeUrl(`${baseUrl}/opportunities/${o.slug}`),
+        lastModified: safeDate(o.lastCheckedAt || o.updatedAt),
+        changeFrequency: "daily" as const,
+        priority: 0.75,
+      }));
 
     return [...staticRoutes, ...networkRoutes, ...guideRoutes, ...opportunityRoutes];
   } catch (err) {
-    console.warn("Failed to generate dynamic sitemap routes, falling back to static routes:", err);
+    console.error("Failed to generate dynamic sitemap routes, fallback to static:", err);
     return staticRoutes;
   }
 }
