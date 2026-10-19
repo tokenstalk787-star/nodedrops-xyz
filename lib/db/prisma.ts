@@ -9,7 +9,7 @@ const prismaClientSingleton = () => {
   return new PrismaClient({
     log:
       process.env.NODE_ENV === "development"
-        ? ["query", "error", "warn"]
+        ? ["error"]
         : ["error"],
   });
 };
@@ -20,6 +20,10 @@ if (process.env.NODE_ENV !== "production") {
   globalThis.prismaGlobal = prisma;
 }
 
+let cachedDbConnected: boolean | null = null;
+let lastDbCheckTime = 0;
+const DB_CHECK_INTERVAL = 30000; // 30s cache
+
 /**
  * Checks if the database is accessible.
  * Returns true if a simple query succeeds, false otherwise.
@@ -28,12 +32,21 @@ export async function isDatabaseConnected(): Promise<boolean> {
   if (!process.env.DATABASE_URL) {
     return false;
   }
+
+  const now = Date.now();
+  if (cachedDbConnected !== null && now - lastDbCheckTime < DB_CHECK_INTERVAL) {
+    return cachedDbConnected;
+  }
+
   try {
-    // Quick probe query
+    // Quick probe query with short timeout
     await prisma.$queryRaw`SELECT 1`;
+    cachedDbConnected = true;
+    lastDbCheckTime = now;
     return true;
-  } catch (error) {
-    console.warn("Database connection check failed:", error);
+  } catch {
+    cachedDbConnected = false;
+    lastDbCheckTime = now;
     return false;
   }
 }

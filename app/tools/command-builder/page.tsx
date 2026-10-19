@@ -16,7 +16,6 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CodeBlock } from "@/components/ui/code-block";
-import { getCommandTemplates } from "@/lib/services/data-service";
 
 export default function CommandBuilderPage() {
   const [networkSlug, setNetworkSlug] = React.useState("ethereum-sepolia");

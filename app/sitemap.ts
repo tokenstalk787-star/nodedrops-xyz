@@ -4,6 +4,12 @@ import { getNetworks, getGuides, getOpportunities } from "@/lib/services/data-se
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://nodedrops.xyz";
 
+  const safeDate = (dateVal: any): Date => {
+    if (!dateVal) return new Date();
+    const d = new Date(dateVal);
+    return isNaN(d.getTime()) ? new Date() : d;
+  };
+
   // Static public routes
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: baseUrl, lastModified: new Date(), changeFrequency: "daily", priority: 1.0 },
@@ -16,6 +22,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/tools/checklist`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 },
     { url: `${baseUrl}/troubleshooting`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
     { url: `${baseUrl}/learn`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
+    { url: `${baseUrl}/login`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
+    { url: `${baseUrl}/register`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
     { url: `${baseUrl}/about`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
     { url: `${baseUrl}/contact`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
     { url: `${baseUrl}/security`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.6 },
@@ -24,33 +32,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/terms`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.4 },
   ];
 
-  // Dynamic entities
-  const [networks, guides, opps] = await Promise.all([
-    getNetworks({ limit: 100 }),
-    getGuides({ limit: 100 }),
-    getOpportunities({ limit: 100 }),
-  ]);
+  try {
+    // Dynamic entities
+    const [networks, guides, opps] = await Promise.all([
+      getNetworks({ limit: 100 }),
+      getGuides({ limit: 100 }),
+      getOpportunities({ limit: 100 }),
+    ]);
 
-  const networkRoutes: MetadataRoute.Sitemap = networks.items.map((n) => ({
-    url: `${baseUrl}/networks/${n.slug}`,
-    lastModified: new Date(n.lastVerifiedAt),
-    changeFrequency: "weekly",
-    priority: 0.85,
-  }));
+    const networkRoutes: MetadataRoute.Sitemap = (networks.items || []).map((n) => ({
+      url: `${baseUrl}/networks/${n.slug}`,
+      lastModified: safeDate(n.lastVerifiedAt || (n as any).updatedAt),
+      changeFrequency: "weekly",
+      priority: 0.85,
+    }));
 
-  const guideRoutes: MetadataRoute.Sitemap = guides.items.map((g) => ({
-    url: `${baseUrl}/guides/${g.slug}`,
-    lastModified: new Date(g.lastVerifiedAt),
-    changeFrequency: "weekly",
-    priority: 0.85,
-  }));
+    const guideRoutes: MetadataRoute.Sitemap = (guides.items || []).map((g) => ({
+      url: `${baseUrl}/guides/${g.slug}`,
+      lastModified: safeDate(g.lastVerifiedAt || (g as any).publishedAt || (g as any).updatedAt),
+      changeFrequency: "weekly",
+      priority: 0.85,
+    }));
 
-  const opportunityRoutes: MetadataRoute.Sitemap = opps.items.map((o) => ({
-    url: `${baseUrl}/opportunities/${o.slug}`,
-    lastModified: new Date(o.lastCheckedAt),
-    changeFrequency: "daily",
-    priority: 0.75,
-  }));
+    const opportunityRoutes: MetadataRoute.Sitemap = (opps.items || []).map((o) => ({
+      url: `${baseUrl}/opportunities/${o.slug}`,
+      lastModified: safeDate(o.lastCheckedAt || (o as any).updatedAt),
+      changeFrequency: "daily",
+      priority: 0.75,
+    }));
 
-  return [...staticRoutes, ...networkRoutes, ...guideRoutes, ...opportunityRoutes];
+    return [...staticRoutes, ...networkRoutes, ...guideRoutes, ...opportunityRoutes];
+  } catch (err) {
+    console.warn("Failed to generate dynamic sitemap routes, falling back to static routes:", err);
+    return staticRoutes;
+  }
 }

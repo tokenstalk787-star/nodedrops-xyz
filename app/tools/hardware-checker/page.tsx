@@ -18,7 +18,25 @@ import {
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { evaluateHardware } from "@/lib/services/data-service";
+
+interface HardwareCheckDetail {
+  component: string;
+  provided: number;
+  min: number;
+  recommended: number;
+  meetsMin: boolean;
+  meetsRecommended: boolean;
+  unit: string;
+}
+
+interface HardwareEvaluationResult {
+  status: "MEETS_RECOMMENDED" | "MEETS_MINIMUM" | "BELOW_MINIMUM" | "INSUFFICIENT_INFORMATION";
+  message: string;
+  networkName?: string;
+  officialUrl?: string;
+  details: HardwareCheckDetail[];
+  notes?: string;
+}
 
 export default function HardwareCheckerPage() {
   const [networkSlug, setNetworkSlug] = React.useState("ethereum-sepolia");
@@ -30,32 +48,38 @@ export default function HardwareCheckerPage() {
   const [operatingSystem, setOperatingSystem] = React.useState("Ubuntu 24.04 LTS");
 
   const [loading, setLoading] = React.useState(false);
-  const [result, setResult] = React.useState<Awaited<ReturnType<typeof evaluateHardware>> | null>(null);
+  const [result, setResult] = React.useState<HardwareEvaluationResult | null>(null);
 
-  const handleEvaluate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const performEvaluation = React.useCallback(async (params: {
+    networkSlug: string;
+    nodeType: string;
+    cpuCores: number;
+    ramGb: number;
+    ssdGb: number;
+    bandwidthMbps: number;
+    operatingSystem: string;
+  }) => {
     setLoading(true);
     try {
-      const evaluation = await evaluateHardware({
-        networkSlug,
-        nodeType,
-        cpuCores: Number(cpuCores),
-        ramGb: Number(ramGb),
-        ssdGb: Number(ssdGb),
-        bandwidthMbps: Number(bandwidthMbps),
-        operatingSystem,
+      const res = await fetch("/api/tools/hardware-checker", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params),
       });
-      setResult(evaluation);
+      if (res.ok) {
+        const evaluation: HardwareEvaluationResult = await res.json();
+        setResult(evaluation);
+      }
     } catch (err) {
       console.error("Evaluation error:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  // Evaluate on mount
-  React.useEffect(() => {
-    evaluateHardware({
+  const handleEvaluate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await performEvaluation({
       networkSlug,
       nodeType,
       cpuCores: Number(cpuCores),
@@ -63,8 +87,21 @@ export default function HardwareCheckerPage() {
       ssdGb: Number(ssdGb),
       bandwidthMbps: Number(bandwidthMbps),
       operatingSystem,
-    }).then(setResult);
-  }, []);
+    });
+  };
+
+  // Evaluate on mount
+  React.useEffect(() => {
+    performEvaluation({
+      networkSlug,
+      nodeType,
+      cpuCores: Number(cpuCores),
+      ramGb: Number(ramGb),
+      ssdGb: Number(ssdGb),
+      bandwidthMbps: Number(bandwidthMbps),
+      operatingSystem,
+    });
+  }, [performEvaluation, networkSlug, nodeType]);
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-5xl">
