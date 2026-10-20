@@ -1,4 +1,6 @@
+
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import "./globals.css";
 import { Navbar } from "../components/layout/navbar";
 import { Footer } from "../components/layout/footer";
@@ -17,7 +19,9 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: {
-      default: settings.siteTitle || "NodeDrops.xyz — Blockchain Node Education, Discovery & Tooling",
+      default:
+        settings.siteTitle ||
+        "NodeDrops.xyz — Blockchain Node Education, Discovery & Tooling",
       template: "%s | NodeDrops.xyz",
     },
     description:
@@ -34,7 +38,9 @@ export async function generateMetadata(): Promise<Metadata> {
     ],
     metadataBase: new URL("https://nodedrops.xyz"),
     openGraph: {
-      title: settings.siteTitle || "NodeDrops.xyz — Run Nodes. Learn Web3. Explore Opportunities.",
+      title:
+        settings.siteTitle ||
+        "NodeDrops.xyz — Run Nodes. Learn Web3. Explore Opportunities.",
       description: settings.siteDescription,
       url: "https://nodedrops.xyz",
       siteName: "NodeDrops.xyz",
@@ -71,7 +77,6 @@ export default async function RootLayout({
 }) {
   const theme = await getThemeConfig();
 
-  // Dynamic CSS variables derived from Theme & Appearance settings
   const dynamicCss = `
     :root {
       --color-brand-purple: ${theme.primaryColor || "#8B5CF6"};
@@ -93,9 +98,26 @@ export default async function RootLayout({
         />
       </head>
       <body className="min-h-screen flex flex-col bg-background text-text-primary antialiased selection:bg-brand-purple/40 selection:text-white overflow-x-hidden w-full max-w-[100vw]">
+        {/* Google tag — replace the placeholder with your real tag ID */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-0T4QGLB1FF"
+          strategy="afterInteractive"
+        />
+        <Script id="google-tag" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){window.dataLayer.push(arguments);}
+            window.gtag = gtag;
+            window.gtag('js', new Date());
+            window.gtag('config', 'G-0T4QGLB1FF');
+          `}
+        </Script>
+
         <TelemetryTracker />
         <Navbar />
-        <main className="flex-1 w-full max-w-full overflow-x-hidden">{children}</main>
+        <main className="flex-1 w-full max-w-full overflow-x-hidden">
+          {children}
+        </main>
         <Footer />
       </body>
     </html>
